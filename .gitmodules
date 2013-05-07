@@ -1,0 +1,3 @@
+[submodule "Dependencies/ocmock"]
+	path = Dependencies/ocmock
+	url = https://github.com/erikdoe/ocmock.git

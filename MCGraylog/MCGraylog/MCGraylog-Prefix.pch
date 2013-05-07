@@ -1,0 +1,7 @@
+//
+// Prefix header for all source files of the 'MCGraylog' target in the 'MCGraylog' project
+//
+
+#ifdef __OBJC__
+    #import <Cocoa/Cocoa.h>
+#endif
