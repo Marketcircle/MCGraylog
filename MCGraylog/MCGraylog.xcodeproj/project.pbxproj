@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2E638C2C1753E76A009E98BD /* logstash-1.1.12-flatjar.jar in Frameworks */ = {isa = PBXBuildFile; fileRef = 2E638C2B1753E76A009E98BD /* logstash-1.1.12-flatjar.jar */; };
+		2E638C2F1753E78C009E98BD /* MCGraylogIntegrationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2E638C2E1753E78C009E98BD /* MCGraylogIntegrationTests.m */; };
+		2E638C301753E9F6009E98BD /* logstash-1.1.12-flatjar.jar in Resources */ = {isa = PBXBuildFile; fileRef = 2E638C2B1753E76A009E98BD /* logstash-1.1.12-flatjar.jar */; };
+		2E638C321753EA75009E98BD /* logstash.conf in Resources */ = {isa = PBXBuildFile; fileRef = 2E638C311753EA75009E98BD /* logstash.conf */; };
 		B855869F1737FDA400945AF3 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B855869E1737FDA400945AF3 /* Cocoa.framework */; };
 		B85586A91737FDA400945AF3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B85586A71737FDA400945AF3 /* InfoPlist.strings */; };
 		B85586AD1737FDA400945AF3 /* MCGraylog.m in Sources */ = {isa = PBXBuildFile; fileRef = B85586AC1737FDA400945AF3 /* MCGraylog.m */; };
@@ -30,6 +34,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2E638C2B1753E76A009E98BD /* logstash-1.1.12-flatjar.jar */ = {isa = PBXFileReference; lastKnownFileType = archive.jar; path = "logstash-1.1.12-flatjar.jar"; sourceTree = "<group>"; };
+		2E638C2D1753E78C009E98BD /* MCGraylogIntegrationTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCGraylogIntegrationTests.h; sourceTree = "<group>"; };
+		2E638C2E1753E78C009E98BD /* MCGraylogIntegrationTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCGraylogIntegrationTests.m; sourceTree = "<group>"; };
+		2E638C311753EA75009E98BD /* logstash.conf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = logstash.conf; sourceTree = "<group>"; };
 		B855869B1737FDA400945AF3 /* MCGraylog.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MCGraylog.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B855869E1737FDA400945AF3 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		B85586A11737FDA400945AF3 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -68,12 +76,22 @@
 				B85586B51737FDA400945AF3 /* SenTestingKit.framework in Frameworks */,
 				B85586B61737FDA400945AF3 /* Cocoa.framework in Frameworks */,
 				B85586B91737FDA400945AF3 /* MCGraylog.framework in Frameworks */,
+				2E638C2C1753E76A009E98BD /* logstash-1.1.12-flatjar.jar in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2E638C2A1753E753009E98BD /* Logstash */ = {
+			isa = PBXGroup;
+			children = (
+				2E638C2B1753E76A009E98BD /* logstash-1.1.12-flatjar.jar */,
+				2E638C311753EA75009E98BD /* logstash.conf */,
+			);
+			name = Logstash;
+			sourceTree = "<group>";
+		};
 		B85586911737FDA300945AF3 = {
 			isa = PBXGroup;
 			children = (
@@ -138,8 +156,11 @@
 		B85586BA1737FDA400945AF3 /* MCGraylogTests */ = {
 			isa = PBXGroup;
 			children = (
+				2E638C2A1753E753009E98BD /* Logstash */,
 				B85586C01737FDA400945AF3 /* MCGraylogTests.h */,
 				B85586C11737FDA400945AF3 /* MCGraylogTests.m */,
+				2E638C2D1753E78C009E98BD /* MCGraylogIntegrationTests.h */,
+				2E638C2E1753E78C009E98BD /* MCGraylogIntegrationTests.m */,
 				B85586BB1737FDA400945AF3 /* Supporting Files */,
 			);
 			path = MCGraylogTests;
@@ -245,6 +266,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				B85586BF1737FDA400945AF3 /* InfoPlist.strings in Resources */,
+				2E638C301753E9F6009E98BD /* logstash-1.1.12-flatjar.jar in Resources */,
+				2E638C321753EA75009E98BD /* logstash.conf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -280,6 +303,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B85586C21737FDA400945AF3 /* MCGraylogTests.m in Sources */,
+				2E638C2F1753E78C009E98BD /* MCGraylogIntegrationTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -455,6 +479,7 @@
 				B85586C71737FDA400945AF3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		B85586C81737FDA400945AF3 /* Build configuration list for PBXNativeTarget "MCGraylogTests" */ = {
 			isa = XCConfigurationList;
@@ -463,6 +488,7 @@
 				B85586CA1737FDA400945AF3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
