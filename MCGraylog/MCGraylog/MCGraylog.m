@@ -65,7 +65,6 @@ void graylog_log(GraylogLogLevel lvl, const char* facility, const char* msg, NSD
                                                @"1.0", @"version",
                                                [NSString stringWithFormat:@"%s", hostname], @"host",
                                                [NSString stringWithFormat:@"%s", msg], @"short_message",
-                                               @"full message goes here", @"full_message",
                                                [NSNumber numberWithDouble:[[NSDate date] timeIntervalSince1970]], @"timestamp",
                                                [NSNumber numberWithInt:lvl], @"level",
                                                [NSString stringWithFormat:@"%s", facility], @"facility",
