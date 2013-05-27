@@ -130,5 +130,16 @@ static NSPipe * outputPipe;
     STAssertEqualObjects(response[@"@fields"][@"level"], @(GraylogLogLevelWarning), @"Wrong log level in response");
 }
 
+- (void)testCustomTextField {
+    graylog_log(GraylogLogLevelWarning, "test", "message", @{@"custom_field":@"hello"});
+    NSDictionary * response = [self logstashResponse];
+    STAssertEqualObjects(response[@"@fields"][@"_custom_field"], @"hello",@"");
+}
+
+- (void)testCustomNumberField {
+    graylog_log(GraylogLogLevelWarning, "test", "message", @{@"custom_field":@5});
+    NSDictionary * response = [self logstashResponse];
+    STAssertEqualObjects(response[@"@fields"][@"_custom_field"], @5,@"");
+}
 
 @end
