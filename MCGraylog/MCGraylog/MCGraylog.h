@@ -8,8 +8,18 @@
 
 #import <Foundation/Foundation.h>
 
+typedef enum {
+    GraylogLogLevelEmergency = 0,
+    GraylogLogLevelAlert = 1,
+    GraylogLogLevelCritical = 2,
+    GraylogLogLevelError = 3, 
+    GraylogLogLevelWarning = 4,
+    GraylogLogLevelNotice = 5,
+    GraylogLogLevelInformational = 6,
+    GraylogLogLevelDebug = 7
+} GraylogLogLevel;
+
 void graylog_init(const char* address, const char* port);
-void graylog_log(uint lvl, const char* facility, const char* msg, NSDictionary *data);
-//void graylog_log(const char* string);
+void graylog_log(GraylogLogLevel lvl, const char* facility, const char* msg, NSDictionary *data);
 
 

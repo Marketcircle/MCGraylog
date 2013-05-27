@@ -55,7 +55,7 @@ void graylog_init(const char* address, const char* port) {
     
 }
 
-void graylog_log(uint lvl, const char* facility, const char* msg, NSDictionary *data){
+void graylog_log(GraylogLogLevel lvl, const char* facility, const char* msg, NSDictionary *data){
     
     char hostname[1024];
     hostname[1023] = '\0';
