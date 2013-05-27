@@ -55,7 +55,7 @@ void graylog_init(const char* address, const char* port) {
     
 }
 
-void graylog_log(uint lvl, const char* facility, const char* msg, NSDictionary *data){
+void graylog_log(GraylogLogLevel lvl, const char* facility, const char* msg, NSDictionary *data){
     
     char hostname[1024];
     hostname[1023] = '\0';
@@ -65,7 +65,6 @@ void graylog_log(uint lvl, const char* facility, const char* msg, NSDictionary *
                                                @"1.0", @"version",
                                                [NSString stringWithFormat:@"%s", hostname], @"host",
                                                [NSString stringWithFormat:@"%s", msg], @"short_message",
-                                               @"full message goes here", @"full_message",
                                                [NSNumber numberWithDouble:[[NSDate date] timeIntervalSince1970]], @"timestamp",
                                                [NSNumber numberWithInt:lvl], @"level",
                                                [NSString stringWithFormat:@"%s", facility], @"facility",
