@@ -398,10 +398,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/../../../../Shared/jvaladas/Developer/SharedBuild/Products/Debug\"",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				FRAMEWORK_VERSION = A;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MCGraylog/MCGraylog-Prefix.pch";
@@ -417,10 +414,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/../../../../Shared/jvaladas/Developer/SharedBuild/Products/Debug\"",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				FRAMEWORK_VERSION = A;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MCGraylog/MCGraylog-Prefix.pch";
