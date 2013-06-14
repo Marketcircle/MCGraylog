@@ -10,6 +10,5 @@
 
 void graylog_init(const char* address, const char* port);
 void graylog_log(uint lvl, const char* facility, const char* msg, NSDictionary *data);
-//void graylog_log(const char* string);
 
 
