@@ -184,8 +184,6 @@ void graylog_log(GraylogLogLevel lvl, const char* facility, const char* msg, NSD
                 chunkData = chunkHeader;
             }
 
-            const void *chunkstuff = chunkData.bytes;
-
             NSData *graylog_data_compressed = chunkData;//[NSData dataWithBytesNoCopy:buf length:strm.total_out freeWhenDone:YES];
             CFSocketSendData(graylog_socket, NULL, (__bridge CFDataRef)(graylog_data_compressed), 1);
 
