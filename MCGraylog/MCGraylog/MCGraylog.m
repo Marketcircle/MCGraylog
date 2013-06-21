@@ -16,7 +16,7 @@
 
 static dispatch_queue_t graylog_queue;
 static CFSocketRef graylog_socket;
-static const int max_chunk_size = 65507;
+static const uLong max_chunk_size = 65507;
 
 typedef Byte message_id_t[8];
 
@@ -141,7 +141,9 @@ void graylog_log(GraylogLogLevel lvl, const char* facility, const char* msg, NSD
         deflateEnd(&strm);
 
 
-        int chunk_count = (strm.total_out % max_chunk_size) ? strm.total_out / max_chunk_size + 1 : strm.total_out / max_chunk_size;
+        uLong chunk_count = (strm.total_out % max_chunk_size) ?
+                                strm.total_out / max_chunk_size + 1 :
+                                strm.total_out / max_chunk_size;
         long remain = strm.total_out;
 
         // Generate a message_id hash from hostname and timestamp
