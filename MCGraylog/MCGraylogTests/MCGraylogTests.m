@@ -28,7 +28,11 @@
 - (void)testExample
 {
     graylog_init("localhost", "12201");
-    graylog_log(1,"foo_facility", "foo", [NSDictionary dictionaryWithObjectsAndKeys:@"one", @"1", @"two", @"2", nil]);
+    //graylog_log(1,"foo_facility", "foo", [NSDictionary dictionaryWithObjectsAndKeys:@"one", @"1", @"two", @"2", nil]);
+    char *msg = malloc(65533);
+    graylog_log(1,"foo_facility", msg, [NSDictionary dictionaryWithObjectsAndKeys:@"one", @"1", @"two", @"2", nil]);
+    
+    sleep(1);
 }
 
 @end

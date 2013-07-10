@@ -12,7 +12,7 @@ typedef enum {
     GraylogLogLevelEmergency = 0,
     GraylogLogLevelAlert = 1,
     GraylogLogLevelCritical = 2,
-    GraylogLogLevelError = 3, 
+    GraylogLogLevelError = 3,
     GraylogLogLevelWarning = 4,
     GraylogLogLevelNotice = 5,
     GraylogLogLevelInformational = 6,
