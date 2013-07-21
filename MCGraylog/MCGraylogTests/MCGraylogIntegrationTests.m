@@ -57,13 +57,8 @@ static NSPipe* outputPipe;
 }
 
 
-- (NSDictionary*) logstashResponse {
+- (NSDictionary*) parseResponse:(NSData*)data {
 
-    NSMutableData* data = [NSMutableData data];
-    do {
-        [data appendData:[outputPipe.fileHandleForReading availableData]];
-    } while (data.length < 10); // TODO: why 10? magic number fuuuuuu
-    
     NSError*   parse_error = nil;
     NSDictionary* response = [NSJSONSerialization JSONObjectWithData:data
                                                              options:0
@@ -72,88 +67,178 @@ static NSPipe* outputPipe;
                    @"Failed to parse logstash response: %@. Error: %@",
                    [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding],
                    parse_error);
-
+    
     return response;
 }
 
 
+- (NSDictionary*) logstashResponse {
+
+    NSMutableData* data = [NSMutableData data];
+    do {
+        [data appendData:[outputPipe.fileHandleForReading availableData]];
+    } while (data.length < 10); // TODO: why 10? magic number fuuuuuu
+    
+    return [self parseResponse:data];
+}
+
+
+- (NSDictionary*) waitForResponse:(NSTimeInterval)timeout {
+    NSMutableData* data = [[NSMutableData alloc] init];
+    
+    NSDate* start = [NSDate date];
+    while ([[NSDate date] timeIntervalSinceDate:start] < timeout)
+        [data appendData:[outputPipe.fileHandleForReading availableData]];
+    
+    if (!data.length) return nil;
+
+    return [self parseResponse:data];
+}
+
+- (dispatch_queue_t)graylogQueue {
+    return dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND,
+                                     0);
+}
+
+
+#define WAIT_FOR_RESPONSE NSDictionary* response = [self logstashResponse]
+#define WAIT_FOR_NO_RESPONSE                            \
+    dispatch_barrier_sync([self graylogQueue], ^() {}); \
+    NSDictionary* response = [self waitForResponse:1];
+
+
 #pragma mark Tests
 
-- (void)testBasicLogging {
+
+- (void) testCorrectlySendsFacilityAndShortMessage {
+    
     graylog_log(GraylogLogLevelInformational, @"test", @"message", @{});
-    NSDictionary * response = [self logstashResponse];
-    STAssertEqualObjects(response[@"@fields"][@"short_message"], @"message", @"Short message should be test");
-    STAssertEqualObjects(response[@"@fields"][@"facility"], @"test", @"Short message should be test");
+    WAIT_FOR_RESPONSE;
+    
+    STAssertEqualObjects(response[@"@fields"][@"short_message"], @"message",
+                         @"Short message should be test");
+    STAssertEqualObjects(response[@"@fields"][@"facility"], @"test",
+                         @"Short message should be test");
 }
 
 
-- (void)testDebugLevel {
-    graylog_log(GraylogLogLevelDebug, @"test", @"message", @{});
-    NSDictionary * response = [self logstashResponse];
-    STAssertEqualObjects(response[@"@fields"][@"level"], @(GraylogLogLevelDebug), @"Wrong log level in response");
-}
-
-
-- (void)testAlertLevel {
-    graylog_log(GraylogLogLevelAlert, @"test", @"message", @{});
-    NSDictionary * response = [self logstashResponse];
-    STAssertEqualObjects(response[@"@fields"][@"level"], @(GraylogLogLevelAlert), @"Wrong log level in response");
-}
-
-
-- (void)testCriticalLevel {
-    graylog_log(GraylogLogLevelCritical, @"test", @"message", @{});
-    NSDictionary * response = [self logstashResponse];
-    STAssertEqualObjects(response[@"@fields"][@"level"], @(GraylogLogLevelCritical), @"Wrong log level in response");
-}
-
-
-- (void)testEmergencyLevel {
-    graylog_log(GraylogLogLevelEmergency, @"test", @"message", @{});
-    NSDictionary * response = [self logstashResponse];
-    STAssertEqualObjects(response[@"@fields"][@"level"], @(GraylogLogLevelEmergency), @"Wrong log level in response");
-}
-
-
-- (void)testErrorLevel {
-    graylog_log(GraylogLogLevelError, @"test", @"message", @{});
-    NSDictionary * response = [self logstashResponse];
-    STAssertEqualObjects(response[@"@fields"][@"level"], @(GraylogLogLevelError), @"Wrong log level in response");
-}
-
-
-- (void)testInformationalLevel {
-    graylog_log(GraylogLogLevelInformational, @"test", @"message", @{});
-    NSDictionary * response = [self logstashResponse];
-    STAssertEqualObjects(response[@"@fields"][@"level"], @(GraylogLogLevelInformational), @"Wrong log level in response");
-}
-
-
-- (void)testNoticeLevel {
-    graylog_log(GraylogLogLevelNotice, @"test", @"message", @{});
-    NSDictionary * response = [self logstashResponse];
-    STAssertEqualObjects(response[@"@fields"][@"level"], @(GraylogLogLevelNotice), @"Wrong log level in response");
-}
-
-
-- (void)testWarningLevel {
-    graylog_log(GraylogLogLevelWarning, @"test", @"message", @{});
-    NSDictionary * response = [self logstashResponse];
-    STAssertEqualObjects(response[@"@fields"][@"level"], @(GraylogLogLevelWarning), @"Wrong log level in response");
+- (void) testLogLevels {
+    [@[
+       @(GraylogLogLevelUnknown),
+       @(GraylogLogLevelFatal),
+       @(GraylogLogLevelEmergency),
+       @(GraylogLogLevelAlert),
+       @(GraylogLogLevelCritical),
+       @(GraylogLogLevelError),
+       @(GraylogLogLevelWarning),
+       @(GraylogLogLevelWarn),
+       @(GraylogLogLevelNotice),
+       @(GraylogLogLevelInformational),
+       @(GraylogLogLevelInfo),
+       @(GraylogLogLevelDebug)
+       ]
+     enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL* stop) {
+         graylog_log((GraylogLogLevel)[obj integerValue],
+                     @"test",
+                     @"message",
+                     nil);
+         WAIT_FOR_RESPONSE;
+         STAssertEqualObjects(response[@"@fields"][@"level"],
+                              obj,
+                              @"Wrong log level in response");
+     }];
 }
 
 
 - (void)testCustomTextField {
-    graylog_log(GraylogLogLevelWarning, @"test", @"message", @{@"custom_field":@"hello"});
-    NSDictionary * response = [self logstashResponse];
-    STAssertEqualObjects(response[@"@fields"][@"_custom_field"], @"hello",@"");
+    graylog_log(GraylogLogLevelWarning,
+                @"test",
+                @"message",
+                @{
+                  @"custom_field": @"hello"
+                  });
+    WAIT_FOR_RESPONSE;
+    STAssertEqualObjects(response[@"@fields"][@"_custom_field"], @"hello", nil);
 }
 
 
 - (void)testCustomNumberField {
-    graylog_log(GraylogLogLevelWarning, @"test", @"message", @{@"custom_field":@5});
-    NSDictionary * response = [self logstashResponse];
-    STAssertEqualObjects(response[@"@fields"][@"_custom_field"], @5,@"");
+    graylog_log(GraylogLogLevelWarning,
+                @"test",
+                @"message",
+                @{
+                  @"custom_field": @5
+                  });
+    WAIT_FOR_RESPONSE;
+    STAssertEqualObjects(response[@"@fields"][@"_custom_field"], @5, nil);
+}
+
+
+- (void) testManyConcurrentLogs {
+    STFail(@"Implement me!");
+    return;
+    
+    dispatch_queue_t q = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH,
+                                                   0);
+    dispatch_apply(100, q, ^(size_t index) {
+        GRAYLOG_ALERT(@"test", @"%zd", index);
+    });
+
+    // some sort of assertion goes here...
+}
+
+
+- (void) testVariableArgumentsForMacros {
+    STFail(@"Implement me!");
+}
+
+
+- (void) testMessageChunking {
+    STFail(@"Implement me!");
+}
+
+
+- (void) testMessageNotLoggedIfLevelTooHigh {
+    graylog_set_log_level(GraylogLogLevelEmergency);
+    GRAYLOG_DEBUG(@"test", @"herp derp");
+    WAIT_FOR_NO_RESPONSE; // wait a reasonable amount of time for the response
+    STAssertNil(response, @"Something was still logged to graylog!");
+}
+
+
+- (void) testHandlesLoggingUnserializableObject {
+    graylog_log(GraylogLogLevelDebug,
+                @"test",
+                @"message",
+                @{
+                  @"data": [NSData data]
+                  });
+    WAIT_FOR_RESPONSE; // block until we get the response
+    
+    NSString* actual = response[@"@short_message"];
+    NSRange   range  = [actual rangeOfString:@"Failed to serialize message"];
+
+    STAssertTrue(range.location != NSNotFound,
+                 @"Expected serialization failure message, got: %@", response);
+}
+
+
+- (void) testLoggingEmptyString {
+    GRAYLOG_ALERT(@"test", @"");
+    WAIT_FOR_RESPONSE;
+    STAssertEqualObjects(response[@"@short_message"], @"", nil);
+}
+
+
+- (void) testLoggingEmptyFacility {
+    GRAYLOG_ALERT(@"", @"message");
+    WAIT_FOR_RESPONSE;
+    STAssertEqualObjects(response[@"@facility"], @"", nil);
+}
+
+
+- (void) testFacilityAndMessageMustNotBeNil {
+    STFail(@"Implement me!");
 }
 
 
