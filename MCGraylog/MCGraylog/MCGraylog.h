@@ -62,6 +62,8 @@ void graylog_set_log_level(GraylogLogLevel level);
 #pragma mark Logging
 
 /**
+ * @todo Consider making the log level parameter an NSNumber
+ *
  * Log a message to the Graylog server (or some other compatible service).
  *
  * @param lvl Log level, the severity of the message
