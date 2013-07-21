@@ -64,13 +64,18 @@ graylog_init(const char* address,
     graylog_address.sin_addr.s_addr = inet_addr(hostname);
     graylog_address.sin_port = htons(atoi(port));
 
-    CFDataRef address_data = CFDataCreate(kCFAllocatorDefault, (const UInt8 *)&graylog_address, sizeof(graylog_address));
 
-    CFSocketError connection_error = CFSocketConnectToAddress(graylog_socket, address_data, -1);
+    CFDataRef address_data = CFDataCreate(kCFAllocatorDefault,
+                                          (const uint8_t*)&graylog_address,
+                                          sizeof(graylog_address));
 
+    CFSocketError connection_error = CFSocketConnectToAddress(graylog_socket,
+                                                              address_data,
+                                                              1);
     if (connection_error != kCFSocketSuccess) {
-
-        // Error handling
+        NSLog(@"MCGraylog: Failed to bind socket to server address [%ld]",
+              connection_error);
+        return -1;
     }
 
     return 0;
