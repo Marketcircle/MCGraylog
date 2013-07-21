@@ -99,11 +99,10 @@ graylog_init(const char* address,
         return -1;
     }
     
-    base_dictionary = [@{ @"version": @"1.0",
-                          @"host": [NSString stringWithCString:hostname
-                                                      encoding:NSUTF8StringEncoding],
-                          } mutableCopy];
-    
+    base_dictionary = [@{
+                         @"version": @"1.0",
+                         @"host": hostname,
+                        } mutableCopy];
     
     return 0; // successfully completed!
 }
