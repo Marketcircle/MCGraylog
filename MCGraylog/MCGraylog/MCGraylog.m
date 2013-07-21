@@ -96,23 +96,6 @@ void graylog_log(GraylogLogLevel lvl, const char* facility, const char* msg, NSD
             [graylog_dictionary setObject:[data objectForKey:key] forKey:[NSString stringWithFormat:@"_%@",key]];
     }
 
-    NSData *graylog_data = [NSJSONSerialization dataWithJSONObject:graylog_dictionary options:0 error:NULL];
-
-    char *buf = malloc(graylog_data.length);
-
-    z_stream strm;
-    strm.zalloc = Z_NULL;
-    strm.zfree = Z_NULL;
-    strm.opaque = Z_NULL;
-    strm.avail_in = (uInt)graylog_data.length;
-    strm.next_in = (Bytef *)graylog_data.bytes;
-    strm.avail_out = (UInt)graylog_data.length;
-    strm.next_out = (Bytef *)buf;
-
-    deflateInit(&strm, Z_DEFAULT_COMPRESSION);
-    deflate(&strm, Z_FINISH);
-    deflateEnd(&strm);
-
     dispatch_async(graylog_queue, ^{
         char hostname[1024];
         hostname[1023] = '\0';
