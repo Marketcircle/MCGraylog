@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2E638C2C1753E76A009E98BD /* logstash-1.1.12-flatjar.jar in Frameworks */ = {isa = PBXBuildFile; fileRef = 2E638C2B1753E76A009E98BD /* logstash-1.1.12-flatjar.jar */; };
 		2E638C2F1753E78C009E98BD /* MCGraylogIntegrationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2E638C2E1753E78C009E98BD /* MCGraylogIntegrationTests.m */; };
 		2E638C301753E9F6009E98BD /* logstash-1.1.12-flatjar.jar in Resources */ = {isa = PBXBuildFile; fileRef = 2E638C2B1753E76A009E98BD /* logstash-1.1.12-flatjar.jar */; };
 		2E638C321753EA75009E98BD /* logstash.conf in Resources */ = {isa = PBXBuildFile; fileRef = 2E638C311753EA75009E98BD /* logstash.conf */; };
@@ -73,7 +72,6 @@
 				B85586B51737FDA400945AF3 /* SenTestingKit.framework in Frameworks */,
 				B85586B61737FDA400945AF3 /* Cocoa.framework in Frameworks */,
 				B85586B91737FDA400945AF3 /* MCGraylog.framework in Frameworks */,
-				2E638C2C1753E76A009E98BD /* logstash-1.1.12-flatjar.jar in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
