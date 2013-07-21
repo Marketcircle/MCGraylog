@@ -58,7 +58,12 @@ graylog_init(const char* address,
     struct addrinfo *res;
     struct in_addr addr;
 
-    getaddrinfo(address, port, NULL, &res);
+    int getaddr_result = getaddrinfo(address, port, NULL, &res);
+    if (getaddr_result) {
+        NSLog(@"Failed to resolve address for graylog: %s",
+              gai_strerror(getaddr_result));
+        return;
+    }
 
     addr.s_addr = ((struct sockaddr_in *)(res->ai_addr))->sin_addr.s_addr;
     freeaddrinfo(res);
