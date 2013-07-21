@@ -72,6 +72,8 @@ graylog_init(const char* address,
     CFSocketError connection_error = CFSocketConnectToAddress(graylog_socket,
                                                               address_data,
                                                               1);
+    CFRelease(address_data); // done with this guy now
+    
     if (connection_error != kCFSocketSuccess) {
         NSLog(@"MCGraylog: Failed to bind socket to server address [%ld]",
               connection_error);
