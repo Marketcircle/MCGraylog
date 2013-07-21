@@ -175,6 +175,7 @@ compress_message(NSData* message,
                     "graylog_log",
                     [description cStringUsingEncoding:NSUTF8StringEncoding],
                     nil);
+        free(deflated_message);
         return -1;
     }
     
@@ -201,6 +202,9 @@ send_log(uint8_t* message, size_t message_size)
     uint64 hash = P1;
     for (const char* p = message_string; *p != 0; p++)
         hash = hash * P2 + *p;
+
+    free(message_string); // done with that guy now...
+    
 
     // calculate the number of chunks that we will need to make
     uLong chunk_count = message_size / max_chunk_size;
