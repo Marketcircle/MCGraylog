@@ -17,6 +17,7 @@
 static dispatch_queue_t graylog_queue;
 static CFSocketRef graylog_socket;
 static const uLong max_chunk_size = 65507;
+static char hostname[1024];
 
 typedef Byte message_id_t[8];
 
@@ -80,16 +81,25 @@ graylog_init(const char* address,
         return -1;
     }
 
-    return 0;
+    int gethostname_result = gethostname(hostname, 1024);
+    if (gethostname_result) {
+        NSLog(@"MCGraylog: Failed to determine hostname (%s)",
+              strerror(gethostname_result));
+        return -1;
+    }
+    
+    return 0; // successfully completed!
 }
 
 
-void graylog_log(GraylogLogLevel lvl, const char* facility, const char* msg, NSDictionary *data){
-
-    dispatch_async(graylog_queue, ^{
-        char hostname[1024];
-        hostname[1023] = '\0';
-        gethostname(hostname, 1023);
+void
+graylog_log(GraylogLogLevel lvl,
+            const char* facility,
+            const char* msg,
+            NSDictionary *data)
+{
+    
+    dispatch_async(graylog_queue, ^() {
 
         NSMutableDictionary *graylog_dictionary = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                                    @"1.0", @"version",
