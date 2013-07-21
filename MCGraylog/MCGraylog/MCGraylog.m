@@ -21,7 +21,6 @@ static CFSocketRef graylog_socket           = NULL;
 static NSMutableDictionary* base_dictionary = nil;
 static const uLong max_chunk_size           = 65507;
 static const Byte  chunked[2]               = {0x1e, 0x0f};
-static const char* graylog_facility         = "mcgraylog";
 
 #define CHUNKED_SIZE 2
 #define P1 7

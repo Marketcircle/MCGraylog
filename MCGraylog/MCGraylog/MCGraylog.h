@@ -19,6 +19,9 @@ typedef enum {
     GraylogLogLevelDebug = 7
 } GraylogLogLevel;
 
+NSString* const MCGraylogLogFacility = @"mcgraylog";
+
+
 /**
  * Perform some up front work needed for all future log messages
  *
