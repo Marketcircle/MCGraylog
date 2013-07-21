@@ -6,33 +6,20 @@
 //  Copyright (c) 2013 Marketcircle. All rights reserved.
 //
 
-#import "MCGraylogTests.h"
-#import "MCGraylog.h"
+#import <SenTestingKit/SenTestingKit.h>
+#include "MCGraylog.h"
+
+
+@interface MCGraylogTests : SenTestCase
+@end
+
 
 @implementation MCGraylogTests
 
-- (void)setUp
+- (void) testCanSetup
 {
-    [super setUp];
-    
-    // Set-up code here.
-}
-
-- (void)tearDown
-{
-    // Tear-down code here.
-    
-    [super tearDown];
-}
-
-- (void)testExample
-{
-    graylog_init("localhost", "12201");
-    //graylog_log(1,"foo_facility", "foo", [NSDictionary dictionaryWithObjectsAndKeys:@"one", @"1", @"two", @"2", nil]);
-    char *msg = malloc(65533);
-    graylog_log(1,"foo_facility", msg, [NSDictionary dictionaryWithObjectsAndKeys:@"one", @"1", @"two", @"2", nil]);
-    
-    sleep(1);
+    int result = graylog_init("localhost", "12201");
+    STAssertEquals(0, result, @"Failed to initialize graylog");
 }
 
 @end
