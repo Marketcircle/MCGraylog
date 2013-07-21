@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
+
 typedef enum {
     GraylogLogLevelEmergency     = 0,
     GraylogLogLevelAlert         = 1,
@@ -36,7 +37,6 @@ int graylog_init(const char* address, const char* port);
  */
 void graylog_deinit();
 
-
 /**
  * Log a message to the Graylog server (or some other compatible service).
  *
@@ -48,6 +48,6 @@ void graylog_deinit();
  *             serializable (e.g. numbers, strings, arrays, dictionaries)
  */
 void graylog_log(GraylogLogLevel lvl,
-                 const char* facility,
-                 const char* msg,
+                 NSString* facility,
+                 NSString* message,
                  NSDictionary* data);

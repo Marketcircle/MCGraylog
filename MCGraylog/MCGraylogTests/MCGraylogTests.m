@@ -7,7 +7,7 @@
 //
 
 #import <SenTestingKit/SenTestingKit.h>
-#include "MCGraylog.h"
+#import "MCGraylog.h"
 
 
 @interface MCGraylogTests : SenTestCase

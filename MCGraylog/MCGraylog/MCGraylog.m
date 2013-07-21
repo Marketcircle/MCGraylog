@@ -132,24 +132,19 @@ graylog_deinit()
 static
 NSData*
 format_message(GraylogLogLevel lvl,
-               const char* facility,
-               const char* msg,
+               NSString* facility,
+               NSString* message,
                NSDictionary* xtra_data)
 {
     NSMutableDictionary* dictionary = [base_dictionary mutableCopy];
+    dictionary[@"timestamp"]     = @([[NSDate date] timeIntervalSince1970]);
+    dictionary[@"level"]         = @(lvl);
+    dictionary[@"facility"]      = facility;
+    dictionary[@"short_message"] = message;
     
-    dictionary[@"timestamp"] = @([[NSDate date] timeIntervalSince1970]);
-    dictionary[@"level"]     = @(lvl);
-    
-    dictionary[@"facility"] = [NSString stringWithCString:facility
-                                                 encoding:NSASCIIStringEncoding];
-    
-    dictionary[@"short_message"] = [NSString stringWithCString:msg
-                                                      encoding:NSUTF8StringEncoding];
-
     [xtra_data enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL* stop) {
         if (![key isEqual: @"id"])
-            dictionary[[NSString stringWithFormat:@"_%@",key]] = obj;
+            dictionary[[NSString stringWithFormat:@"_%@", key]] = obj;
     }];
     
 
@@ -178,16 +173,15 @@ compress_message(NSData* message,
                  uint8_t** deflated_message,
                  size_t* deflated_message_size)
 {
-    // predict size
+    // predict size first, then use that value for output buffer
     *deflated_message_size = compressBound([message length]);
     *deflated_message      = malloc(*deflated_message_size);
-    
+
     int result = compress(*deflated_message,
                           deflated_message_size,
                           [message bytes],
                           [message length]);
     
-    // TODO: refactor this block into a macro or something
     if (result != Z_OK) {
         // hopefully this doesn't fail...
         NSString* description =
@@ -215,17 +209,16 @@ send_log(uint8_t* message, size_t message_size)
     struct timeval time;
     gettimeofday(&time, NULL);
     
-    char* message_string =
-    malloc(hostname_length + ceil(log10(abs(time.tv_usec))) + 1);
-    sprintf(message_string, "%s%u", hostname, time.tv_usec);
-
+    NSString* base_hash =
+    [hostname stringByAppendingString:[@(time.tv_usec) stringValue]];
+    
+    const char* message_string =
+    [base_hash cStringUsingEncoding:NSUTF8StringEncoding];
+    
     // calculate hash
     uint64 hash = P1;
     for (const char* p = message_string; *p != 0; p++)
         hash = hash * P2 + *p;
-
-    free(message_string); // done with that guy now...
-    
 
     // calculate the number of chunks that we will need to make
     uLong chunk_count = message_size / max_chunk_size;
@@ -249,15 +242,15 @@ send_log(uint8_t* message, size_t message_size)
             graylog_header* header = malloc(sizeof(graylog_header));
             memcpy(header->message_id, &hash, sizeof(message_id_t));
             memcpy(header->chunked, &chunked, CHUNKED_SIZE);
-            header->sequence = i;
-            header->total    = chunk_count;
+            header->sequence = (Byte)i;
+            header->total    = (Byte)chunk_count;
             
             NSMutableData* chunkHeader = [NSMutableData dataWithBytes:header
                                                                length:12];
             [chunkHeader appendData:chunkData];
             chunkData = chunkHeader;
         }
-        
+
         CFSocketError send_error = CFSocketSendData(graylog_socket,
                                                     NULL,
                                                     (__bridge CFDataRef)chunkData,
@@ -278,19 +271,10 @@ send_log(uint8_t* message, size_t message_size)
 
 void
 graylog_log(GraylogLogLevel lvl,
-            const char* fclty,
-            const char* msg,
+            NSString* facility,
+            NSString* message,
             NSDictionary *data)
 {
-    // copy the strings, because they can't be retained
-    // and guaranteed to stick around for the lifetime of the async block
-    
-    char* facility = malloc(strlen(fclty));
-    strcpy(facility, fclty);
-    
-    char* message  = malloc(strlen(msg));
-    strcpy(message, msg);
-
     dispatch_async(graylog_queue, ^() {
 
         NSData* formatted_message = format_message(lvl, facility, message, data);
@@ -308,7 +292,5 @@ graylog_log(GraylogLogLevel lvl,
         send_log(compressed_message, compressed_message_size);
         
         free(compressed_message); // don't forget!
-        free(facility);
-        free(message);
     });
 }
