@@ -39,8 +39,14 @@ socket_callback(CFSocketRef s,
     NSLog(@"callback stuff...herp derp");
 }
 
-void graylog_init(const char* address, const char* port) {
-    graylog_queue = dispatch_queue_create("com.marketcircle.graylog", 0);
+
+void
+graylog_init(const char* address,
+             const char* port)
+{
+    graylog_queue = dispatch_queue_create("com.marketcircle.graylog",
+                                          DISPATCH_QUEUE_SERIAL);
+
     graylog_socket = CFSocketCreate(kCFAllocatorDefault, 0, SOCK_DGRAM, IPPROTO_UDP, (kCFSocketConnectCallBack | kCFSocketWriteCallBack), socket_callback, NULL);
 
     struct addrinfo *res;
