@@ -47,7 +47,13 @@ graylog_init(const char* address,
     graylog_queue = dispatch_queue_create("com.marketcircle.graylog",
                                           DISPATCH_QUEUE_SERIAL);
 
-    graylog_socket = CFSocketCreate(kCFAllocatorDefault, 0, SOCK_DGRAM, IPPROTO_UDP, (kCFSocketConnectCallBack | kCFSocketWriteCallBack), socket_callback, NULL);
+    graylog_socket = CFSocketCreate(kCFAllocatorDefault,
+                                    PF_INET,
+                                    SOCK_DGRAM,
+                                    IPPROTO_UDP,
+                                    (kCFSocketConnectCallBack|kCFSocketWriteCallBack),
+                                    socket_callback,
+                                    NULL);
 
     struct addrinfo *res;
     struct in_addr addr;
