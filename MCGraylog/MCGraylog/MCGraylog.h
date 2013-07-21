@@ -80,30 +80,30 @@ void graylog_log(GraylogLogLevel lvl,
 
 
 #define GRAYLOG_LOG(level, facility, format, ...) {                         \
-    NSString* message = [NSString stringWithFormat:format, __VA_ARGS__];    \
+    NSString* message = [NSString stringWithFormat:format, ##__VA_ARGS__];  \
     graylog_log(level, facility, message, nil);                             \
 }
 
 #define GRAYLOG_EMERGENCY(facility, format, ...) \
-    GRAYLOG_LOG(GraylogLogLevelEmergency, facility, format, __VA_ARGS__)
+    GRAYLOG_LOG(GraylogLogLevelEmergency, facility, format, ##__VA_ARGS__)
 
 #define GRAYLOG_ALERT(facility, format, ...) \
-    GRAYLOG_LOG(GraylogLogLevelAlert, facility, format, __VA_ARGS__)
+    GRAYLOG_LOG(GraylogLogLevelAlert, facility, format, ##__VA_ARGS__)
 
 #define GRAYLOG_CRITICAL(facility, format, ...) \
-    GRAYLOG_LOG(GraylogLogLevelCritical, facility, format, __VA_ARGS__)
+    GRAYLOG_LOG(GraylogLogLevelCritical, facility, format, ##__VA_ARGS__)
 
 #define GRAYLOG_ERROR(facility, format, ...) \
-    GRAYLOG_LOG(GraylogLogLevelError, facility, format, __VA_ARGS__)
+    GRAYLOG_LOG(GraylogLogLevelError, facility, format, ##__VA_ARGS__)
 
 #define GRAYLOG_WARN(facility, format, ...) \
-    GRAYLOG_LOG(GraylogLogLevelWarn, facility, format, __VA_ARGS__)
+    GRAYLOG_LOG(GraylogLogLevelWarn, facility, format, ##__VA_ARGS__)
 
 #define GRAYLOG_NOTICE(facility, format, ...) \
-    GRAYLOG_LOG(GraylogLogLevelNotice, facility, format, __VA_ARGS__)
+    GRAYLOG_LOG(GraylogLogLevelNotice, facility, format, ##__VA_ARGS__)
 
 #define GRAYLOG_INFO(facility, format, ...) \
-    GRAYLOG_LOG(GraylogLogLevelInfo, facility, format, __VA_ARGS__)
+    GRAYLOG_LOG(GraylogLogLevelInfo, facility, format, ##__VA_ARGS__)
 
 #define GRAYLOG_DEBUG(facility, format, ...) \
-    GRAYLOG_LOG(GraylogLogLevelDebug, facility, format, __VA_ARGS__)
+    GRAYLOG_LOG(GraylogLogLevelDebug, facility, format, ##__VA_ARGS__)
