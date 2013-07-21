@@ -145,7 +145,7 @@ graylog_log_level()
 
 
 void
-set_graylog_log_level(GraylogLogLevel new_level)
+graylog_set_log_level(GraylogLogLevel new_level)
 {
     max_log_level = max_log_level;
 }

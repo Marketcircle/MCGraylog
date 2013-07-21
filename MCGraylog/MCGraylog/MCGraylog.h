@@ -56,7 +56,7 @@ GraylogLogLevel graylog_log_level();
 /**
  * @param level the new log level
  */
-void set_graylog_log_level(GraylogLogLevel level);
+void graylog_set_log_level(GraylogLogLevel level);
 
 
 #pragma mark Logging
