@@ -9,14 +9,16 @@
 #import <Foundation/Foundation.h>
 
 typedef enum {
-    GraylogLogLevelEmergency = 0,
-    GraylogLogLevelAlert = 1,
-    GraylogLogLevelCritical = 2,
-    GraylogLogLevelError = 3,
-    GraylogLogLevelWarning = 4,
-    GraylogLogLevelNotice = 5,
+    GraylogLogLevelEmergency     = 0,
+    GraylogLogLevelAlert         = 1,
+    GraylogLogLevelCritical      = 2,
+    GraylogLogLevelError         = 3,
+    GraylogLogLevelWarning       = 4,
+    GraylogLogLevelWarn          = 4,
+    GraylogLogLevelNotice        = 5,
     GraylogLogLevelInformational = 6,
-    GraylogLogLevelDebug = 7
+    GraylogLogLevelInfo          = 6,
+    GraylogLogLevelDebug         = 7
 } GraylogLogLevel;
 
 NSString* const MCGraylogLogFacility = @"mcgraylog";
