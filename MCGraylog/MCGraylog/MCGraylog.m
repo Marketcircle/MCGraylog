@@ -43,27 +43,27 @@ graylog_init(const char* address,
                                     NULL, // callback function
                                     NULL); // callback context
 
-    struct addrinfo *res;
-    struct in_addr addr;
+    
+    struct addrinfo* graylog_info = NULL;
 
-    int getaddr_result = getaddrinfo(address, port, NULL, &res);
+    int getaddr_result = getaddrinfo(address, port, NULL, &graylog_info);
     if (getaddr_result) {
-        NSLog(@"Failed to resolve address for graylog: %s",
+        NSLog(@"MCGraylog: Failed to resolve address for graylog: %s",
               gai_strerror(getaddr_result));
         return -1;
     }
+    
+    struct in_addr addr;
+    memset(&addr, 0, sizeof(struct in_addr));
+    addr.s_addr = ((struct sockaddr_in*)(graylog_info->ai_addr))->sin_addr.s_addr;
 
-    addr.s_addr = ((struct sockaddr_in *)(res->ai_addr))->sin_addr.s_addr;
-    freeaddrinfo(res);
-
-    char* hostname = inet_ntoa(addr);
+    freeaddrinfo(graylog_info); // done with this guy now
+    
     struct sockaddr_in graylog_address;
-
-    graylog_address.sin_len = sizeof(hostname);
-    graylog_address.sin_family = AF_INET;
-    graylog_address.sin_addr.s_addr = inet_addr(hostname);
-    graylog_address.sin_port = htons(atoi(port));
-
+    memset(&graylog_address, 0, sizeof(struct sockaddr_in));
+    graylog_address.sin_family      = AF_INET;
+    graylog_address.sin_addr.s_addr = inet_addr(inet_ntoa(addr));
+    graylog_address.sin_port        = htons(atoi(port));
 
     CFDataRef address_data = CFDataCreate(kCFAllocatorDefault,
                                           (const uint8_t*)&graylog_address,
