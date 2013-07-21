@@ -37,11 +37,6 @@
                BlueprintName = "MCGraylogTests"
                ReferencedContainer = "container:MCGraylog.xcodeproj">
             </BuildableReference>
-            <SkippedTests>
-               <Test
-                  Identifier = "MCGraylogTests">
-               </Test>
-            </SkippedTests>
          </TestableReference>
       </Testables>
    </TestAction>
