@@ -14,12 +14,14 @@
 #include <netdb.h>
 #include <sys/time.h>
 
+static GraylogLogLevel max_log_level        = GraylogLogLevelDebug;
 static dispatch_queue_t graylog_queue       = NULL;
 static CFSocketRef graylog_socket           = NULL;
 static NSMutableDictionary* base_dictionary = nil;
 static NSString* hostname                   = nil;
 static const uLong max_chunk_size           = 65507;
 static const Byte  chunked[2]               = {0x1e, 0x0f};
+
 
 NSString* const MCGraylogLogFacility = @"mcgraylog";
 #define CHUNKED_SIZE 2
@@ -39,7 +41,8 @@ typedef struct {
 
 int
 graylog_init(const char* address,
-             const char* port)
+             const char* port,
+             GraylogLogLevel init_level)
 {
     graylog_queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND,
                                               0);
@@ -105,6 +108,8 @@ graylog_init(const char* address,
                          @"host": hostname,
                         } mutableCopy];
     
+    max_log_level = init_level;
+    
     return 0; // successfully completed!
 }
 
@@ -127,6 +132,22 @@ graylog_deinit()
     if (hostname) {
         hostname = nil;
     }
+    
+    max_log_level = GraylogLogLevelDebug;
+}
+
+
+GraylogLogLevel
+graylog_log_level()
+{
+    return max_log_level;
+}
+
+
+void
+set_graylog_log_level(GraylogLogLevel new_level)
+{
+    max_log_level = max_log_level;
 }
 
 
@@ -258,14 +279,20 @@ send_log(uint8_t* message, size_t message_size)
 
 
 void
-graylog_log(GraylogLogLevel lvl,
+graylog_log(GraylogLogLevel level,
             NSString* facility,
             NSString* message,
             NSDictionary *data)
 {
+    // ignore messages that are not important enough to log
+    if (level > max_log_level) return;
+    
     dispatch_async(graylog_queue, ^() {
 
-        NSData* formatted_message = format_message(lvl, facility, message, data);
+        NSData* formatted_message = format_message(level,
+                                                   facility,
+                                                   message,
+                                                   data);
         if (!formatted_message)
             return;
         

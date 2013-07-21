@@ -25,17 +25,41 @@ typedef enum {
 } GraylogLogLevel;
 
 
+#pragma mark Init/Deinit
+
 /**
  * Perform some up front work needed for all future log messages
  *
+ * @param address domain where the graylog server is located
+ * @param port port number that graylog server is listening on
+ * @param level minimum log level required to actually send messages to graylog;
+ *        if a message is logged with a higher level it will be ignored
  * @return 0 on success, otherwise -1.
  */
-int graylog_init(const char* address, const char* port);
+int graylog_init(const char* address,
+                 const char* port,
+                 GraylogLogLevel level);
 
 /**
  * Free any global state that was created by graylog_init.
  */
 void graylog_deinit();
+
+
+#pragma mark Properties
+
+/**
+ * @return the current log level;
+ */
+GraylogLogLevel graylog_log_level();
+
+/**
+ * @param level the new log level
+ */
+void set_graylog_log_level(GraylogLogLevel level);
+
+
+#pragma mark Logging
 
 /**
  * Log a message to the Graylog server (or some other compatible service).

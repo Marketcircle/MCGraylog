@@ -47,7 +47,7 @@ static NSPipe* outputPipe;
 
 - (void)setUp {
     [super setUp];
-    graylog_init("localhost", "12201");
+    graylog_init("localhost", "12201", GraylogLogLevelDebug);
 }
 
 
