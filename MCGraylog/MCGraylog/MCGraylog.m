@@ -21,6 +21,7 @@ static NSString* hostname                   = nil;
 static const uLong max_chunk_size           = 65507;
 static const Byte  chunked[2]               = {0x1e, 0x0f};
 
+NSString* const MCGraylogLogFacility = @"mcgraylog";
 #define CHUNKED_SIZE 2
 #define P1 7
 #define P2 31
@@ -153,13 +154,9 @@ format_message(GraylogLogLevel lvl,
                                                            options:0
                                                              error:&error];
     if (error) {
-        // hopefully this doesn't fail...
-        NSString* description =
-        [NSString stringWithFormat:@"Failed to serialize message: %@", error];
-        graylog_log(GraylogLogLevelError,
-                    graylog_facility,
-                    [description cStringUsingEncoding:NSUTF8StringEncoding],
-                    nil);
+        // hopefully this doesn't fail as well...
+        GRAYLOG_ERROR(MCGraylogLogFacility,
+                      @"Failed to serialize message: %@", error);
         return nil;
     }
     
@@ -184,12 +181,8 @@ compress_message(NSData* message,
     
     if (result != Z_OK) {
         // hopefully this doesn't fail...
-        NSString* description =
-        [NSString stringWithFormat:@"Failed to compress message: %d", result];
-        graylog_log(GraylogLogLevelError,
-                    "graylog_log",
-                    [description cStringUsingEncoding:NSUTF8StringEncoding],
-                    nil);
+        GRAYLOG_ERROR(MCGraylogLogFacility,
+                      @"Failed to compress message: %d", result);
         free(deflated_message);
         return -1;
     }
@@ -255,14 +248,9 @@ send_log(uint8_t* message, size_t message_size)
                                                     NULL,
                                                     (__bridge CFDataRef)chunkData,
                                                     1);
-        if (send_error) {
-            NSString* description =
-            [NSString stringWithFormat:@"SendData failed: %ldl", send_error];
-            graylog_log(GraylogLogLevelError,
-                        graylog_facility,
-                        [description cStringUsingEncoding:NSUTF8StringEncoding],
-                        nil);
-        }
+        if (send_error)
+            GRAYLOG_ERROR(MCGraylogLogFacility,
+                          @"SendData failed: %ldl", send_error);
         
     }
 
