@@ -92,7 +92,6 @@
 		B85586911737FDA300945AF3 = {
 			isa = PBXGroup;
 			children = (
-				B85586CD1737FE4200945AF3 /* libz.dylib */,
 				B85586A41737FDA400945AF3 /* MCGraylog */,
 				B85586BA1737FDA400945AF3 /* MCGraylogTests */,
 				B855869D1737FDA400945AF3 /* Frameworks */,
@@ -112,6 +111,7 @@
 		B855869D1737FDA400945AF3 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				B85586CD1737FE4200945AF3 /* libz.dylib */,
 				B855869E1737FDA400945AF3 /* Cocoa.framework */,
 				B85586B41737FDA400945AF3 /* SenTestingKit.framework */,
 				B85586A01737FDA400945AF3 /* Other Frameworks */,
