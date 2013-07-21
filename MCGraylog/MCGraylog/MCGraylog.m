@@ -7,7 +7,6 @@
 //
 
 #import "MCGraylog.h"
-#import <Availability.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -41,8 +40,8 @@ int
 graylog_init(const char* address,
              const char* port)
 {
-    graylog_queue = dispatch_queue_create("com.marketcircle.graylog",
-                                          DISPATCH_QUEUE_SERIAL);
+    graylog_queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND,
+                                              0);
 
     graylog_socket = CFSocketCreate(kCFAllocatorDefault,
                                     PF_INET,
@@ -113,13 +112,7 @@ graylog_init(const char* address,
 void
 graylog_deinit()
 {
-    if (graylog_queue) {
-        dispatch_barrier_sync(graylog_queue, ^() {});
-#ifndef __MAC_10_8
-        dispatch_release(graylog_queue);
-#endif
-        graylog_queue = NULL;
-    }
+    graylog_queue = NULL;
     
     if (graylog_socket) {
         CFSocketInvalidate(graylog_socket);
