@@ -183,5 +183,7 @@ graylog_log(GraylogLogLevel lvl,
             CFSocketSendData(graylog_socket, NULL, (__bridge CFDataRef)(graylog_data_compressed), 1);
 
         }
+        
+        free(buf); // don't forget!
     });
 }
