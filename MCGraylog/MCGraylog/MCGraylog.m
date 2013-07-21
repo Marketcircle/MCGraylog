@@ -81,25 +81,8 @@ graylog_init(const char* address,
     return 0;
 }
 
+
 void graylog_log(GraylogLogLevel lvl, const char* facility, const char* msg, NSDictionary *data){
-    char hostname[1024];
-    hostname[1023] = '\0';
-    gethostname(hostname, 1023);
-
-    NSMutableDictionary *graylog_dictionary = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                               @"1.0", @"version",
-                                               [NSString stringWithFormat:@"%s", hostname], @"host",
-                                               [NSString stringWithFormat:@"%s", msg], @"short_message",
-                                               [NSNumber numberWithDouble:[[NSDate date] timeIntervalSince1970]], @"timestamp",
-                                               [NSNumber numberWithInt:lvl], @"level",
-                                               [NSString stringWithFormat:@"%s", facility], @"facility",
-                                               nil
-                                               ];
-
-    for (id key in data) {
-        if (![key isEqual: @"id"])
-            [graylog_dictionary setObject:[data objectForKey:key] forKey:[NSString stringWithFormat:@"_%@",key]];
-    }
 
     dispatch_async(graylog_queue, ^{
         char hostname[1024];
