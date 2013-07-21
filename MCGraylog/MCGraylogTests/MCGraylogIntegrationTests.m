@@ -38,13 +38,6 @@ static NSPipe* outputPipe;
                                                 arguments:arguments];
     logstash.standardInput  = inputPipe;
     logstash.standardOutput = outputPipe;
-
-    [[inputPipe fileHandleForWriting] writeData:[NSData dataWithBytes:"hi"
-                                                               length:2]];
-    [[inputPipe fileHandleForWriting] closeFile];
-    
-    [outputPipe.fileHandleForReading availableData];
-    NSLog(@"Launched");
 }
 
 + (void)tearDown {
