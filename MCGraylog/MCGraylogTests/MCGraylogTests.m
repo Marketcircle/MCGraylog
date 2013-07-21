@@ -43,11 +43,11 @@
     graylog_set_log_level(GraylogLogLevelAlert);
     STAssertEquals(GraylogLogLevelAlert, graylog_log_level(), nil);
     
-    graylog_set_log_level(GraylogLogLevelAlert);
-    STAssertEquals(GraylogLogLevelDebug, graylog_log_level(), nil);
+    graylog_set_log_level(GraylogLogLevelInfo);
+    STAssertEquals(GraylogLogLevelInfo, graylog_log_level(), nil);
 
-    graylog_set_log_level(GraylogLogLevelDebug);
-    STAssertEquals(GraylogLogLevelDebug, graylog_log_level(), nil);
+    graylog_set_log_level(GraylogLogLevelCritical);
+    STAssertEquals(GraylogLogLevelCritical, graylog_log_level(), nil);
 }
 
 
