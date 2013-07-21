@@ -14,11 +14,10 @@
 #include <netdb.h>
 #include <sys/time.h>
 
-static char hostname[1024];
-static size_t hostname_length               = 0;
 static dispatch_queue_t graylog_queue       = NULL;
 static CFSocketRef graylog_socket           = NULL;
 static NSMutableDictionary* base_dictionary = nil;
+static NSString* hostname                   = nil;
 static const uLong max_chunk_size           = 65507;
 static const Byte  chunked[2]               = {0x1e, 0x0f};
 
@@ -89,13 +88,13 @@ graylog_init(const char* address,
         return -1;
     }
 
-    int gethostname_result = gethostname(hostname, 1024);
-    if (gethostname_result) {
-        NSLog(@"MCGraylog: Failed to determine hostname (%s)",
-              strerror(gethostname_result));
+    // TODO: this is an ugly hack that we should fix up
+    hostname = [[NSHost currentHost] localizedName];
+    if (!hostname) {
+        NSLog(@"MCGraylog: Failed to determine hostname");
+        graylog_deinit();
         return -1;
     }
-    hostname_length = strlen(hostname);
     
     base_dictionary = [@{ @"version": @"1.0",
                           @"host": [NSString stringWithCString:hostname
