@@ -67,7 +67,7 @@ graylog_init(const char* address,
 
     CFDataRef address_data = CFDataCreate(kCFAllocatorDefault,
                                           (const uint8_t*)&graylog_address,
-                                          sizeof(graylog_address));
+                                          sizeof(struct sockaddr_in));
 
     CFSocketError connection_error = CFSocketConnectToAddress(graylog_socket,
                                                               address_data,
