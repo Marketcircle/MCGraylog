@@ -32,6 +32,12 @@ NSString* const MCGraylogLogFacility = @"mcgraylog";
 int graylog_init(const char* address, const char* port);
 
 /**
+ * Free any global state that was created by graylog_init.
+ */
+void graylog_deinit();
+
+
+/**
  * Log a message to the Graylog server (or some other compatible service).
  *
  * @param lvl Log level, the severity of the message

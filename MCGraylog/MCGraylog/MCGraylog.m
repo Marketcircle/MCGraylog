@@ -7,6 +7,7 @@
 //
 
 #import "MCGraylog.h"
+#import <Availability.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -52,12 +53,14 @@ graylog_init(const char* address,
                                     NULL); // callback context
 
     
+    // TODO: handle IPv6 addresses...
     struct addrinfo* graylog_info = NULL;
 
     int getaddr_result = getaddrinfo(address, port, NULL, &graylog_info);
     if (getaddr_result) {
         NSLog(@"MCGraylog: Failed to resolve address for graylog: %s",
               gai_strerror(getaddr_result));
+        graylog_deinit();
         return -1;
     }
     
@@ -85,6 +88,7 @@ graylog_init(const char* address,
     if (connection_error != kCFSocketSuccess) {
         NSLog(@"MCGraylog: Failed to bind socket to server address [%ld]",
               connection_error);
+        graylog_deinit();
         return -1;
     }
 
@@ -103,6 +107,33 @@ graylog_init(const char* address,
     
     
     return 0; // successfully completed!
+}
+
+
+void
+graylog_deinit()
+{
+    if (graylog_queue) {
+        dispatch_barrier_sync(graylog_queue, ^() {});
+#ifndef __MAC_10_8
+        dispatch_release(graylog_queue);
+#endif
+        graylog_queue = NULL;
+    }
+    
+    if (graylog_socket) {
+        CFSocketInvalidate(graylog_socket);
+        CFRelease(graylog_socket);
+        graylog_socket = NULL;
+    }
+    
+    if (base_dictionary) {
+        base_dictionary = nil;
+    }
+    
+    if (hostname) {
+        hostname = nil;
+    }
 }
 
 
