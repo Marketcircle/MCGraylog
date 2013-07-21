@@ -27,13 +27,17 @@ typedef struct {
     Byte total;
 } graylog_header;
 
-void socket_callback(
-                     CFSocketRef s,
-                     CFSocketCallBackType callbackType,
-                     CFDataRef address,
-                     const void *data,
-                     void *info
-                     );
+
+static
+void
+socket_callback(CFSocketRef s,
+                CFSocketCallBackType callbackType,
+                CFDataRef address,
+                const void *data,
+                void *info)
+{
+    NSLog(@"callback stuff...herp derp");
+}
 
 void graylog_init(const char* address, const char* port) {
     graylog_queue = dispatch_queue_create("com.marketcircle.graylog", 0);
@@ -191,14 +195,4 @@ void graylog_log(GraylogLogLevel lvl, const char* facility, const char* msg, NSD
 
         }
     });
-}
-
-void socket_callback(
-                     CFSocketRef s,
-                     CFSocketCallBackType callbackType,
-                     CFDataRef address,
-                     const void *data,
-                     void *info) {
-
-    printf("callback stuff\n");
 }
