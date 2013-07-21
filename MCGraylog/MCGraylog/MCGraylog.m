@@ -40,7 +40,7 @@ socket_callback(CFSocketRef s,
 }
 
 
-void
+int
 graylog_init(const char* address,
              const char* port)
 {
@@ -62,7 +62,7 @@ graylog_init(const char* address,
     if (getaddr_result) {
         NSLog(@"Failed to resolve address for graylog: %s",
               gai_strerror(getaddr_result));
-        return;
+        return -1;
     }
 
     addr.s_addr = ((struct sockaddr_in *)(res->ai_addr))->sin_addr.s_addr;
@@ -85,6 +85,7 @@ graylog_init(const char* address,
         // Error handling
     }
 
+    return 0;
 }
 
 void graylog_log(GraylogLogLevel lvl, const char* facility, const char* msg, NSDictionary *data){

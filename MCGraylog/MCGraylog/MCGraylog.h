@@ -19,7 +19,16 @@ typedef enum {
     GraylogLogLevelDebug = 7
 } GraylogLogLevel;
 
-void graylog_init(const char* address, const char* port);
-void graylog_log(GraylogLogLevel lvl, const char* facility, const char* msg, NSDictionary *data);
+/**
+ * Perform some up front work needed for all future log messages
+ *
+ * @return 0 on success, otherwise -1.
+ */
+int graylog_init(const char* address, const char* port);
+
+void graylog_log(GraylogLogLevel lvl,
+                 const char* facility,
+                 const char* msg,
+                 NSDictionary *data);
 
 
