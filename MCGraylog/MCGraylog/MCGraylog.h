@@ -32,7 +32,7 @@ int graylog_init(const char* address, const char* port);
  * @param lvl Log level, the severity of the message
  * @param facility Arbitrary string indicating the subsystem the message came
  *                 from (i.e. sync, persistence, etc.)
- * @param msg The actual log message
+ * @param msg The actual log message, or maybe some monosodium glutamate
  * @param data Any additional information that might be useful that is JSON
  *             serializable (e.g. numbers, strings, arrays, dictionaries)
  */
@@ -40,5 +40,3 @@ void graylog_log(GraylogLogLevel lvl,
                  const char* facility,
                  const char* msg,
                  NSDictionary* data);
-
-

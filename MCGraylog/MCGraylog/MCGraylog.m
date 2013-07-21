@@ -14,10 +14,19 @@
 #include <netdb.h>
 #include <sys/time.h>
 
-static dispatch_queue_t graylog_queue;
-static CFSocketRef graylog_socket;
-static const uLong max_chunk_size = 65507;
 static char hostname[1024];
+static size_t hostname_length               = 0;
+static dispatch_queue_t graylog_queue       = NULL;
+static CFSocketRef graylog_socket           = NULL;
+static NSMutableDictionary* base_dictionary = nil;
+static const uLong max_chunk_size           = 65507;
+static const Byte  chunked[2]               = {0x1e, 0x0f};
+static const char* graylog_facility         = "mcgraylog";
+
+#define CHUNKED_SIZE 2
+#define P1 7
+#define P2 31
+
 
 typedef Byte message_id_t[8];
 
@@ -87,103 +96,194 @@ graylog_init(const char* address,
               strerror(gethostname_result));
         return -1;
     }
+    hostname_length = strlen(hostname);
+    
+    base_dictionary = [@{ @"version": @"1.0",
+                          @"host": [NSString stringWithCString:hostname
+                                                      encoding:NSUTF8StringEncoding],
+                          } mutableCopy];
+    
     
     return 0; // successfully completed!
 }
 
 
+static
+NSData*
+format_message(GraylogLogLevel lvl,
+               const char* facility,
+               const char* msg,
+               NSDictionary* xtra_data)
+{
+    NSMutableDictionary* dictionary = [base_dictionary mutableCopy];
+    
+    dictionary[@"timestamp"] = @([[NSDate date] timeIntervalSince1970]);
+    dictionary[@"level"]     = @(lvl);
+    
+    dictionary[@"facility"] = [NSString stringWithCString:facility
+                                                 encoding:NSASCIIStringEncoding];
+    
+    dictionary[@"short_message"] = [NSString stringWithCString:msg
+                                                      encoding:NSUTF8StringEncoding];
+
+    [xtra_data enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL* stop) {
+        if (![key isEqual: @"id"])
+            dictionary[[NSString stringWithFormat:@"_%@",key]] = obj;
+    }];
+    
+
+    NSError* error = nil;
+    NSData*   data = [NSJSONSerialization dataWithJSONObject:dictionary
+                                                           options:0
+                                                             error:&error];
+    if (error) {
+        // hopefully this doesn't fail...
+        NSString* description =
+        [NSString stringWithFormat:@"Failed to serialize message: %@", error];
+        graylog_log(GraylogLogLevelError,
+                    graylog_facility,
+                    [description cStringUsingEncoding:NSUTF8StringEncoding],
+                    nil);
+        return nil;
+    }
+    
+    return data;
+}
+
+
+static
+int
+compress_message(NSData* message,
+                 uint8_t** deflated_message,
+                 size_t* deflated_message_size)
+{
+    // predict size
+    *deflated_message_size = compressBound([message length]);
+    *deflated_message      = malloc(*deflated_message_size);
+    
+    int result = compress(*deflated_message,
+                          deflated_message_size,
+                          [message bytes],
+                          [message length]);
+    
+    // TODO: refactor this block into a macro or something
+    if (result != Z_OK) {
+        // hopefully this doesn't fail...
+        NSString* description =
+        [NSString stringWithFormat:@"Failed to compress message: %d", result];
+        graylog_log(GraylogLogLevelError,
+                    "graylog_log",
+                    [description cStringUsingEncoding:NSUTF8StringEncoding],
+                    nil);
+        return -1;
+    }
+    
+    return 0;
+}
+
+
+static
+void
+send_log(uint8_t* message, size_t message_size)
+{
+    // First, generate a message_id hash from hostname and a timestamp;
+
+    // skip error check, only EFAULT is documented for this function
+    // and it cannot be given since we are using memory on the stack
+    struct timeval time;
+    gettimeofday(&time, NULL);
+    
+    char* message_string =
+    malloc(hostname_length + ceil(log10(abs(time.tv_usec))) + 1);
+    sprintf(message_string, "%s%u", hostname, time.tv_usec);
+
+    // calculate hash
+    uint64 hash = P1;
+    for (const char* p = message_string; *p != 0; p++)
+        hash = hash * P2 + *p;
+
+    // calculate the number of chunks that we will need to make
+    uLong chunk_count = message_size / max_chunk_size;
+    if (message_size % max_chunk_size)
+        chunk_count++;
+
+    size_t remain = message_size;
+    for (int i = 0; i < chunk_count; i++) {
+        char*  chunk         = malloc(max_chunk_size);
+        size_t bytes_to_copy = MIN(remain, max_chunk_size);
+        memcpy(chunk, message + (i * max_chunk_size), bytes_to_copy);
+        remain -= bytes_to_copy;
+        
+        NSData *chunkData = [NSData dataWithBytesNoCopy:chunk
+                                                 length:bytes_to_copy
+                                           freeWhenDone:YES];
+        
+        // Append chunk header if we're sending multiple chunks
+        if (chunk_count > 1) {
+            
+            graylog_header* header = malloc(sizeof(graylog_header));
+            memcpy(header->message_id, &hash, sizeof(message_id_t));
+            memcpy(header->chunked, &chunked, CHUNKED_SIZE);
+            header->sequence = i;
+            header->total    = chunk_count;
+            
+            NSMutableData* chunkHeader = [NSMutableData dataWithBytes:header
+                                                               length:12];
+            [chunkHeader appendData:chunkData];
+            chunkData = chunkHeader;
+        }
+        
+        CFSocketError send_error = CFSocketSendData(graylog_socket,
+                                                    NULL,
+                                                    (__bridge CFDataRef)chunkData,
+                                                    1);
+        if (send_error) {
+            NSString* description =
+            [NSString stringWithFormat:@"SendData failed: %ldl", send_error];
+            graylog_log(GraylogLogLevelError,
+                        graylog_facility,
+                        [description cStringUsingEncoding:NSUTF8StringEncoding],
+                        nil);
+        }
+        
+    }
+
+}
+
+
 void
 graylog_log(GraylogLogLevel lvl,
-            const char* facility,
+            const char* fclty,
             const char* msg,
             NSDictionary *data)
 {
+    // copy the strings, because they can't be retained
+    // and guaranteed to stick around for the lifetime of the async block
     
+    char* facility = malloc(strlen(fclty));
+    strcpy(facility, fclty);
+    
+    char* message  = malloc(strlen(msg));
+    strcpy(message, msg);
+
     dispatch_async(graylog_queue, ^() {
 
-        NSMutableDictionary *graylog_dictionary = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                                   @"1.0", @"version",
-                                                   [NSString stringWithFormat:@"%s", hostname], @"host",
-                                                   [NSString stringWithFormat:@"%s", msg], @"short_message",
-                                                   [NSNumber numberWithDouble:[[NSDate date] timeIntervalSince1970]], @"timestamp",
-                                                   [NSNumber numberWithInt:lvl], @"level",
-                                                   [NSString stringWithFormat:@"%s", facility], @"facility",
-                                                   nil
-                                                   ];
-
-        for (id key in data) {
-            if (![key isEqual: @"id"])
-                [graylog_dictionary setObject:[data objectForKey:key] forKey:[NSString stringWithFormat:@"_%@",key]];
-        }
-
-        NSData *graylog_data = [NSJSONSerialization dataWithJSONObject:graylog_dictionary options:0 error:NULL];
-
-        char *buf = malloc(graylog_data.length);
-
-        z_stream strm;
-        strm.zalloc = Z_NULL;
-        strm.zfree = Z_NULL;
-        strm.opaque = Z_NULL;
-        strm.avail_in = (uInt)graylog_data.length;
-        strm.next_in = (Bytef *)graylog_data.bytes;
-        strm.avail_out = (UInt)graylog_data.length;
-        strm.next_out = (Bytef *)buf;
-
-        deflateInit(&strm, Z_DEFAULT_COMPRESSION);
-        deflate(&strm, Z_FINISH);
-        deflateEnd(&strm);
-
-
-        uLong chunk_count = (strm.total_out % max_chunk_size) ?
-                                strm.total_out / max_chunk_size + 1 :
-                                strm.total_out / max_chunk_size;
-        long remain = strm.total_out;
-
-        // Generate a message_id hash from hostname and timestamp
-        struct timeval time;
-        gettimeofday(&time, NULL);
-
-
-        uint64 P1 = 7;
-        uint64 P2 = 31;
-        uint64 hash = P1;
-        char *message_string = malloc(strlen(hostname) + ceil(log10(abs(time.tv_usec))) + 1);
-        sprintf(message_string, "%s%u", hostname, time.tv_usec);
-
-        for (const char* p = message_string; *p != 0; p++) {
-            hash = hash * P2 + *p;
-        }
-
-        for (int i=0;i<chunk_count;i++){
-            char *chunk = malloc(max_chunk_size);
-            long toCopy = remain > max_chunk_size ? max_chunk_size : remain;
-            memcpy(chunk, buf, toCopy);
-            buf += toCopy;
-            remain -= toCopy;
-
-            NSData *chunkData = [NSData dataWithBytesNoCopy:chunk length:toCopy freeWhenDone:YES];
-
-            // Append chunk header if we're sending multiple chunks
-            if (chunk_count > 1){
-
-                graylog_header *header = malloc(sizeof(graylog_header));
-                Byte chunked[2] = {0x1e, 0x0f};
-                memcpy(header->message_id, &hash, sizeof(message_id_t));
-                memcpy(header->chunked, &chunked, 2);
-                header->sequence = i;
-                header->total = chunk_count;
-
-
-                NSMutableData *chunkHeader = [NSMutableData dataWithBytes:header length:12];
-                [chunkHeader appendData:chunkData];
-                chunkData = chunkHeader;
-            }
-
-            NSData *graylog_data_compressed = chunkData;//[NSData dataWithBytesNoCopy:buf length:strm.total_out freeWhenDone:YES];
-            CFSocketSendData(graylog_socket, NULL, (__bridge CFDataRef)(graylog_data_compressed), 1);
-
-        }
+        NSData* formatted_message = format_message(lvl, facility, message, data);
+        if (!formatted_message)
+            return;
         
-        free(buf); // don't forget!
+        uint8_t* compressed_message      = NULL;
+        size_t   compressed_message_size = 0;
+        int compress_result = compress_message(formatted_message,
+                                               &compressed_message,
+                                               &compressed_message_size);
+        if (compress_result)
+            return;
+
+        send_log(compressed_message, compressed_message_size);
+        
+        free(compressed_message); // don't forget!
+        free(facility);
+        free(message);
     });
 }
