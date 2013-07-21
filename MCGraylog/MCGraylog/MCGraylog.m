@@ -28,18 +28,6 @@ typedef struct {
 } graylog_header;
 
 
-static
-void
-socket_callback(CFSocketRef s,
-                CFSocketCallBackType callbackType,
-                CFDataRef address,
-                const void *data,
-                void *info)
-{
-    NSLog(@"callback stuff...herp derp");
-}
-
-
 int
 graylog_init(const char* address,
              const char* port)
@@ -51,9 +39,9 @@ graylog_init(const char* address,
                                     PF_INET,
                                     SOCK_DGRAM,
                                     IPPROTO_UDP,
-                                    (kCFSocketConnectCallBack|kCFSocketWriteCallBack),
-                                    socket_callback,
-                                    NULL);
+                                    kCFSocketNoCallBack,
+                                    NULL, // callback function
+                                    NULL); // callback context
 
     struct addrinfo *res;
     struct in_addr addr;
