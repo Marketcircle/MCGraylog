@@ -4,7 +4,4 @@
    <FileRef
       location = "group:MCGraylog/MCGraylog.xcodeproj">
    </FileRef>
-   <FileRef
-      location = "group:Dependencies/ocmock/Source/OCMock.xcodeproj">
-   </FileRef>
 </Workspace>
