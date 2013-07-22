@@ -7,6 +7,7 @@
 //
 
 #import <SenTestingKit/SenTestingKit.h>
+#import <Availability.h>
 #import "MCGraylog.h"
 
 
@@ -15,7 +16,13 @@ static NSPipe* inputPipe;
 static NSPipe* outputPipe;
 
 
+#define MINIMUM_OUTPUT_LENGTH 20
+#define LOGSTASH_TIMEOUT 2.0
+
+
 @interface MCGraylogIntegrationTests : SenTestCase
+@property (nonatomic) NSMutableData* logstash_output;
+@property (nonatomic) dispatch_semaphore_t output_semaphore;
 @end
 
 
@@ -56,13 +63,27 @@ static NSPipe* outputPipe;
 
 - (void)setUp {
     [super setUp];
+    dispatch_barrier_sync([self graylogQueue], ^() {});
+    
     graylog_init("localhost", "12201", GraylogLogLevelDebug);
+    
+    self.logstash_output  = [[NSMutableData alloc] init];
+    self.output_semaphore = dispatch_semaphore_create(0);
+    
+    outputPipe.fileHandleForReading.readabilityHandler = ^(NSFileHandle* fh) {
+        [self.logstash_output appendData:[fh availableData]];
+        dispatch_semaphore_signal(self.output_semaphore);
+    };
 }
 
 
 - (void)tearDown {
     [super tearDown];
     graylog_deinit();
+    outputPipe.fileHandleForReading.readabilityHandler = NULL;
+#ifndef __MAC_10_8
+    dispatch_release(self.output_semaphore);
+#endif
 }
 
 
@@ -81,32 +102,33 @@ static NSPipe* outputPipe;
 }
 
 
-- (NSDictionary*) logstashResponse {
-
-    NSMutableData* data = [NSMutableData data];
-    do {
-        [data appendData:[outputPipe.fileHandleForReading availableData]];
-    } while (data.length < 10); // TODO: why 10? magic number fuuuuuu
-    
-    return [self parseResponse:data];
-}
-
-
 - (NSDictionary*) waitForResponse:(NSTimeInterval)timeout {
-    NSMutableData* data = [[NSMutableData alloc] init];
-    
-    NSDate* start = [NSDate date];
-    while ([[NSDate date] timeIntervalSinceDate:start] < timeout)
-        [data appendData:[outputPipe.fileHandleForReading availableData]];
-    
-    if (!data.length) return nil;
+    long result = dispatch_semaphore_wait(self.output_semaphore,
+                                          dispatch_time(DISPATCH_TIME_NOW,
+                                                        timeout * NSEC_PER_SEC));
+    if (result) return nil;
 
-    return [self parseResponse:data];
+    if (self.logstash_output.length < MINIMUM_OUTPUT_LENGTH)
+        return [self waitForResponse:timeout];
+    
+    return [self parseResponse:self.logstash_output];
 }
+
+
+- (NSDictionary*) logstashResponse {
+    return [self waitForResponse:LOGSTASH_TIMEOUT];
+}
+
 
 - (dispatch_queue_t)graylogQueue {
     return dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND,
                                      0);
+}
+
+
+- (size_t) over9000 {
+    srand([[NSDate date] timeIntervalSince1970]);
+    return (rand() * 1000) + 9000;
 }
 
 
@@ -149,12 +171,14 @@ static NSPipe* outputPipe;
      enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL* stop) {
          graylog_log((GraylogLogLevel)[obj integerValue],
                      @"test",
-                     @"message",
+                     [NSString stringWithFormat:@"%ld", [obj longValue]],
                      nil);
          WAIT_FOR_RESPONSE;
          STAssertEqualObjects(response[@"@fields"][@"level"],
                               obj,
-                              @"Wrong log level in response");
+                              @"Wrong log level in response: %@", response);
+         
+         self.logstash_output = [[NSMutableData alloc] init]; // reset
      }];
 }
 
@@ -184,21 +208,17 @@ static NSPipe* outputPipe;
 
 
 - (void) testManyConcurrentLogs {
-    STFail(@"Implement me!");
+    STFail(@"Finish implementing me!");
     return;
-    
+
     dispatch_queue_t q = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH,
                                                    0);
-    dispatch_apply(100, q, ^(size_t index) {
+    dispatch_apply([self over9000], q, ^(size_t index) {
         GRAYLOG_ALERT(@"test", @"%zd", index);
     });
-
+    dispatch_barrier_sync([self graylogQueue], ^() {});
+    
     // some sort of assertion goes here...
-}
-
-
-- (void) testVariableArgumentsForMacros {
-    STFail(@"Implement me!");
 }
 
 
@@ -235,19 +255,24 @@ static NSPipe* outputPipe;
 - (void) testLoggingEmptyString {
     GRAYLOG_ALERT(@"test", @"");
     WAIT_FOR_RESPONSE;
-    STAssertEqualObjects(response[@"@short_message"], @"", nil);
+    STAssertEqualObjects(response[@"@fields"][@"short_message"], @"",
+                         [response description]);
 }
 
 
 - (void) testLoggingEmptyFacility {
     GRAYLOG_ALERT(@"", @"message");
     WAIT_FOR_RESPONSE;
-    STAssertEqualObjects(response[@"@facility"], @"", nil);
+    STAssertEqualObjects(response[@"@fields"][@"facility"], @"",
+                         [response description]);
 }
 
 
 - (void) testFacilityAndMessageMustNotBeNil {
-    STFail(@"Implement me!");
+    STAssertThrows(graylog_log(GraylogLogLevelError, nil, @"message", nil),
+                   @"graylog_log should throw when given nil facility");
+    STAssertThrows(graylog_log(GraylogLogLevelError, @"test", nil, nil),
+                   @"graylog_log should throw when given nil message");
 }
 
 
