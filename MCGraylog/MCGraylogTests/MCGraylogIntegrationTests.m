@@ -223,7 +223,12 @@ static NSPipe* outputPipe;
 
 
 - (void) testMessageChunking {
-    STFail(@"Implement me!");
+    STFail(@"Finish implementing me!");
+    return;
+
+    NSString* string = @"http://www.youtube.com/watch?v=HNTxr2NJHa0 ";
+    for (int i = 0; i < 16; i++)
+        string = [string stringByAppendingString:string];
 }
 
 
