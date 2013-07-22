@@ -10,7 +10,7 @@ between the time that something is logged and it shows up in Graylog.
 
 ## Usage
 
-```c
+```obj-c
 #import <Foundation/Foundation.h>
 #import <MCGraylog.h>
 
