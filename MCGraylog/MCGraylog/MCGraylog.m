@@ -171,16 +171,21 @@ format_message(GraylogLogLevel lvl,
     
 
     NSError* error = nil;
-    NSData*   data = [NSJSONSerialization dataWithJSONObject:dictionary
-                                                           options:0
-                                                             error:&error];
-    if (error) {
-        // hopefully this doesn't fail as well...
-        GRAYLOG_ERROR(MCGraylogLogFacility,
-                      @"Failed to serialize message: %@", error);
-        return nil;
+    NSData*   data = nil;
+    @try {
+        data = [NSJSONSerialization dataWithJSONObject:dictionary
+                                               options:0
+                                                 error:&error];
     }
-    
+    @catch (NSException* exception) {
+        if (error) {
+            // hopefully this doesn't fail as well...
+            GRAYLOG_ERROR(MCGraylogLogFacility,
+                          @"Failed to serialize message: %@", error);
+            return nil;
+        }
+    }
+
     return data;
 }
 
