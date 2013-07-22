@@ -27,6 +27,7 @@ static const Byte  chunked[2]               = {0x1e, 0x0f};
 
 
 NSString* const MCGraylogLogFacility = @"mcgraylog";
+#define GRAYLOG_DEFAULT_PORT 12201
 #define CHUNKED_SIZE 2
 #define P1 7
 #define P2 31
@@ -43,10 +44,25 @@ typedef struct {
 
 
 int
-graylog_init(const char* address,
-             const char* port,
-             GraylogLogLevel init_level)
+graylog_init(NSURL* graylog_url, GraylogLogLevel init_level)
 {
+
+    const char* address = [[graylog_url host]
+                           cStringUsingEncoding:NSUTF8StringEncoding];
+    if (!address) {
+        NSLog(@"nil address given as graylog_url");
+        return -1;
+    }
+    
+    NSNumber* port = [graylog_url port];
+    if (!port)
+        port = @(GRAYLOG_DEFAULT_PORT);
+    
+    const char* port_str = [[port stringValue]
+                            cStringUsingEncoding:NSASCIIStringEncoding];
+    int port_num = [port intValue];
+    
+
     // TODO: find out why I can't call dispatch_barrier_sync on a global queue
     _graylog_queue = dispatch_queue_create("com.marketcircle.graylog",
                                            DISPATCH_QUEUE_CONCURRENT);
@@ -63,7 +79,10 @@ graylog_init(const char* address,
     // TODO: handle IPv6 addresses...
     struct addrinfo* graylog_info = NULL;
 
-    int getaddr_result = getaddrinfo(address, port, NULL, &graylog_info);
+    int getaddr_result = getaddrinfo(address,
+                                     port_str,
+                                     NULL,
+                                     &graylog_info);
     if (getaddr_result) {
         NSLog(@"MCGraylog: Failed to resolve address for graylog: %s",
               gai_strerror(getaddr_result));
@@ -81,7 +100,7 @@ graylog_init(const char* address,
     memset(&graylog_address, 0, sizeof(struct sockaddr_in));
     graylog_address.sin_family      = AF_INET;
     graylog_address.sin_addr.s_addr = inet_addr(inet_ntoa(addr));
-    graylog_address.sin_port        = htons(atoi(port));
+    graylog_address.sin_port        = htons(port_num);
 
     CFDataRef address_data = CFDataCreate(kCFAllocatorDefault,
                                           (const uint8_t*)&graylog_address,

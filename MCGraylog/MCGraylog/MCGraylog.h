@@ -30,15 +30,13 @@ typedef enum {
 /**
  * Perform some up front work needed for all future log messages
  *
- * @param address domain where the graylog server is located
- * @param port port number that graylog server is listening on
+ * @param graylog_url The URL (host and port) where Graylog2 is listening;
+ *        if no port number is given, then the default Graylog2 port is used
  * @param level minimum log level required to actually send messages to graylog;
  *        if a message is logged with a higher level it will be ignored
  * @return 0 on success, otherwise -1.
  */
-int graylog_init(const char* address,
-                 const char* port,
-                 GraylogLogLevel level);
+int graylog_init(NSURL* graylog_url, GraylogLogLevel level);
 
 /**
  * Free any global state that was created by graylog_init.

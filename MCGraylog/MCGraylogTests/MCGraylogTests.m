@@ -52,21 +52,24 @@
 
 
 - (void) testInitSetsLevel {
-    graylog_init("localhost", "12201", GraylogLogLevelInfo);
+    graylog_init([NSURL URLWithString:@"http://localhost:12201/"],
+                 GraylogLogLevelInfo);
     STAssertEquals(GraylogLogLevelInfo, graylog_log_level(), nil);
 }
 
 
 - (void) testInitFailureReturnsNonZero {
-    int result = graylog_init("cannot resolve",
-                              "12201",
+    int result = graylog_init([NSURL URLWithString:@"cannot-resolve.com:22"],
                               GraylogLogLevelDebug);
     STAssertTrue(result != 0, @"graylog_init did not fail!");
-    
-    result = graylog_init("localhost",
-                          "not a port",
-                          GraylogLogLevelDebug);
-    STAssertTrue(result != 0, @"graylog_init did not fail!");
+}
+
+
+- (void) testInitWithoutPortUsesDefaultGraylogPort {
+    int result = graylog_init([NSURL URLWithString:@"http://localhost/"],
+                              GraylogLogLevelAlert);
+    // a bit fragile, since we might fail for another reason
+    STAssertTrue(result == 0, @"Setup failed when given no port");
 }
 
 

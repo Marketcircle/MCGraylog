@@ -65,7 +65,8 @@ static NSPipe* outputPipe;
 - (void)setUp {
     [super setUp];
     
-    int result = graylog_init("localhost", "12201", GraylogLogLevelDebug);
+    int result = graylog_init([NSURL URLWithString:@"http://localhost/"],
+                              GraylogLogLevelDebug);
     STAssertEquals(0, result, @"Failed to initialize graylog correctly");
     
     self.logstash_output  = [[NSMutableData alloc] init];
