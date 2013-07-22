@@ -63,9 +63,9 @@ static NSPipe* outputPipe;
 
 - (void)setUp {
     [super setUp];
-    dispatch_barrier_sync([self graylogQueue], ^() {});
     
-    graylog_init("localhost", "12201", GraylogLogLevelDebug);
+    int result = graylog_init("localhost", "12201", GraylogLogLevelDebug);
+    STAssertEquals(0, result, @"Failed to initialize graylog correctly");
     
     self.logstash_output  = [[NSMutableData alloc] init];
     self.output_semaphore = dispatch_semaphore_create(0);
@@ -78,12 +78,13 @@ static NSPipe* outputPipe;
 
 
 - (void)tearDown {
-    [super tearDown];
     graylog_deinit();
     outputPipe.fileHandleForReading.readabilityHandler = NULL;
 #ifndef __MAC_10_8
     dispatch_release(self.output_semaphore);
 #endif
+    
+    [super tearDown];
 }
 
 
@@ -120,12 +121,6 @@ static NSPipe* outputPipe;
 }
 
 
-- (dispatch_queue_t)graylogQueue {
-    return dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND,
-                                     0);
-}
-
-
 - (size_t) over9000 {
     srand([[NSDate date] timeIntervalSince1970]);
     return (rand() * 1000) + 9000;
@@ -134,7 +129,7 @@ static NSPipe* outputPipe;
 
 #define WAIT_FOR_RESPONSE NSDictionary* response = [self logstashResponse]
 #define WAIT_FOR_NO_RESPONSE                            \
-    dispatch_barrier_sync([self graylogQueue], ^() {}); \
+    dispatch_barrier_sync(graylog_queue(), ^() {}); \
     NSDictionary* response = [self waitForResponse:1];
 
 
@@ -210,13 +205,12 @@ static NSPipe* outputPipe;
 - (void) testManyConcurrentLogs {
     STFail(@"Finish implementing me!");
     return;
-
-    dispatch_queue_t q = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH,
+    
+    dispatch_queue_t q = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT,
                                                    0);
-    dispatch_apply([self over9000], q, ^(size_t index) {
+    dispatch_apply(9000, q, ^(size_t index) {
         GRAYLOG_ALERT(@"test", @"%zd", index);
     });
-    dispatch_barrier_sync([self graylogQueue], ^() {});
     
     // some sort of assertion goes here...
 }
@@ -225,10 +219,12 @@ static NSPipe* outputPipe;
 - (void) testMessageChunking {
     STFail(@"Finish implementing me!");
     return;
-
+    
     NSString* string = @"http://www.youtube.com/watch?v=HNTxr2NJHa0 ";
     for (int i = 0; i < 16; i++)
         string = [string stringByAppendingString:string];
+    
+    GRAYLOG_NOTICE(@"test", @"%@", string);
 }
 
 
@@ -236,7 +232,8 @@ static NSPipe* outputPipe;
     graylog_set_log_level(GraylogLogLevelEmergency);
     GRAYLOG_DEBUG(@"test", @"herp derp");
     WAIT_FOR_NO_RESPONSE; // wait a reasonable amount of time for the response
-    STAssertNil(response, @"Something was still logged to graylog!");
+    STAssertNil(response,
+                @"Something was still logged to graylog: %@", response);
 }
 
 
