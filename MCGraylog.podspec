@@ -2,7 +2,7 @@
 # Be sure to run `pod spec lint MCGraylog.podspec' to ensure this is a
 Pod::Spec.new do |s|
   s.name         = "MCGraylog"
-  s.version      = "0.0.1"
+  s.version      = "0.9.9"
   s.summary      = "MCGraylog is a Cocoa C library for logging to a Graylog2 server or any other service that can grok GELF."
   s.homepage     = "http://github.com/Marketcircle/MCGraylog"
   s.license      = 'BSD'
