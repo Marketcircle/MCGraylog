@@ -3,7 +3,7 @@
 Pod::Spec.new do |s|
   s.name         = "MCGraylog"
   s.version      = "0.0.1"
-  s.summary      = "Simple asynchronous logger that logs to a Graylog2 server."
+  s.summary      = "MCGraylog is a Cocoa C library for logging to a Graylog2 server or any other service that can grok GELF."
   s.homepage     = "http://github.com/Marketcircle/MCGraylog"
   s.license      = 'BSD'
   s.author       = { "Mark Rada" => "mrada@marketcircle.com",
