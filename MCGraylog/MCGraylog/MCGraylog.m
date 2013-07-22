@@ -95,7 +95,7 @@ graylog_init(const char* address,
         return -1;
     }
 
-    // TODO: this is an ugly hack that we should fix up
+    // TODO: KVO the hostname
     hostname = [[NSHost currentHost] localizedName];
     if (!hostname) {
         NSLog(@"MCGraylog: Failed to determine hostname");
@@ -103,10 +103,8 @@ graylog_init(const char* address,
         return -1;
     }
     
-    base_dictionary = [@{
-                         @"version": @"1.0",
-                         @"host": hostname,
-                        } mutableCopy];
+    base_dictionary = [@{ @"version": @"1.0",
+                          @"host":    hostname, } mutableCopy];
     
     max_log_level = init_level;
     
@@ -165,6 +163,7 @@ format_message(GraylogLogLevel lvl,
     dictionary[@"short_message"] = message;
     
     [xtra_data enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL* stop) {
+        // TODO: do we just want to silently ignore the @"id" key?
         if (![key isEqual: @"id"])
             dictionary[[NSString stringWithFormat:@"_%@", key]] = obj;
     }];
