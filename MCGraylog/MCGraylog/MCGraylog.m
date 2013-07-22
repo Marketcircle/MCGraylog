@@ -178,12 +178,16 @@ format_message(GraylogLogLevel lvl,
                                                  error:&error];
     }
     @catch (NSException* exception) {
-        if (error) {
-            // hopefully this doesn't fail as well...
-            GRAYLOG_ERROR(MCGraylogLogFacility,
-                          @"Failed to serialize message: %@", error);
-            return nil;
-        }
+        GRAYLOG_ERROR(MCGraylogLogFacility,
+                      @"Failed to serialize message: %@", exception);
+        return nil;
+    }
+    
+    if (error) {
+        // hopefully this doesn't fail as well...
+        GRAYLOG_ERROR(MCGraylogLogFacility,
+                      @"Failed to serialize message: %@", error);
+        return nil;
     }
 
     return data;
