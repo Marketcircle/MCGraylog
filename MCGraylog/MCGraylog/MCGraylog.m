@@ -24,7 +24,6 @@ static const Byte  chunked[2]               = {0x1e, 0x0f};
 
 
 NSString* const MCGraylogLogFacility = @"mcgraylog";
-NSString* const MCGraylogNilParameterException = @"mcgraylog argument error";
 #define CHUNKED_SIZE 2
 #define P1 7
 #define P2 31
@@ -289,7 +288,7 @@ graylog_log(GraylogLogLevel level,
     if (level > max_log_level) return;
     
     if (!(facility && message))
-        [NSException raise:MCGraylogNilParameterException
+        [NSException raise:NSInvalidArgumentException
                     format:@"Facility: %@; Message: %@", facility, message];
     
     dispatch_async(graylog_queue, ^() {
