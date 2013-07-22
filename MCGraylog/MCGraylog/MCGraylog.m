@@ -7,6 +7,7 @@
 //
 
 #import "MCGraylog.h"
+#import <Availability.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -15,7 +16,7 @@
 #include <sys/time.h>
 
 static GraylogLogLevel max_log_level        = GraylogLogLevelDebug;
-static dispatch_queue_t graylog_queue       = NULL;
+static dispatch_queue_t _graylog_queue      = NULL;
 static CFSocketRef graylog_socket           = NULL;
 static NSMutableDictionary* base_dictionary = nil;
 static NSString* hostname                   = nil;
@@ -44,9 +45,10 @@ graylog_init(const char* address,
              const char* port,
              GraylogLogLevel init_level)
 {
-    graylog_queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND,
-                                              0);
-
+    // TODO: find out why I can't call dispatch_barrier_sync on a global queue
+    _graylog_queue = dispatch_queue_create("com.marketcircle.graylog",
+                                           DISPATCH_QUEUE_CONCURRENT);
+    
     graylog_socket = CFSocketCreate(kCFAllocatorDefault,
                                     PF_INET,
                                     SOCK_DGRAM,
@@ -115,7 +117,13 @@ graylog_init(const char* address,
 void
 graylog_deinit()
 {
-    graylog_queue = NULL;
+    if (_graylog_queue) {
+        dispatch_barrier_sync(_graylog_queue, ^() {});
+#ifndef __MAC_10_8
+        dispatch_release(_graylog_queue);
+#endif
+        _graylog_queue = NULL;
+    }
     
     if (graylog_socket) {
         CFSocketInvalidate(graylog_socket);
@@ -146,6 +154,13 @@ void
 graylog_set_log_level(GraylogLogLevel new_level)
 {
     max_log_level = new_level;
+}
+
+
+dispatch_queue_t
+graylog_queue()
+{
+    return _graylog_queue;
 }
 
 
@@ -299,7 +314,7 @@ graylog_log(GraylogLogLevel level,
         [NSException raise:NSInvalidArgumentException
                     format:@"Facility: %@; Message: %@", facility, message];
     
-    dispatch_async(graylog_queue, ^() {
+    dispatch_async(_graylog_queue, ^() {
 
         NSData* formatted_message = format_message(level,
                                                    facility,
