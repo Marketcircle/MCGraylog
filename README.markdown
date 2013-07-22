@@ -1,4 +1,5 @@
 # MCGraylog [![Build Status](https://travis-ci.org/Marketcircle/MCGraylog.png?branch=master)](https://travis-ci.org/Marketcircle/MCGraylog)
+
 MCGraylog is a Cocoa C library for logging to a Graylog2 server or any
 other service that can grok GELF.
 
@@ -49,13 +50,9 @@ We use Logstash to test MCGraylog, so you can reference our test
 configuration (and files) to get started more quickly.
 
 
-## Development
-
-
-
 ## Contributing to MCGraylog
 
-See {file:CONTRIBUTING.markdown}
+See CONTRIBUTING.markdown
 
 
 ## Copyright
