@@ -58,11 +58,6 @@ GraylogLogLevel graylog_log_level();
  */
 void graylog_set_log_level(GraylogLogLevel level);
 
-/**
- * @todo Put this in a private header
- */
-dispatch_queue_t graylog_queue();
-
 
 #pragma mark Logging
 

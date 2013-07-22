@@ -9,6 +9,7 @@
 #import <SenTestingKit/SenTestingKit.h>
 #import <Availability.h>
 #import "MCGraylog.h"
+#import "Internals.h"
 
 
 static NSTask* logstash;
@@ -205,8 +206,8 @@ static NSPipe* outputPipe;
 - (void) testManyConcurrentLogs {
     STFail(@"Finish implementing me!");
     return;
-    
-    dispatch_queue_t q = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT,
+
+    dispatch_queue_t q = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH,
                                                    0);
     dispatch_apply(9000, q, ^(size_t index) {
         GRAYLOG_ALERT(@"test", @"%zd", index);

@@ -7,13 +7,15 @@
 //
 
 #import "MCGraylog.h"
+#import "Private Headers/Internals.h"
+
 #import <Availability.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <zlib.h>
-#include <netdb.h>
-#include <sys/time.h>
+#import <sys/socket.h>
+#import <netinet/in.h>
+#import <arpa/inet.h>
+#import <zlib.h>
+#import <netdb.h>
+#import <sys/time.h>
 
 static GraylogLogLevel max_log_level        = GraylogLogLevelDebug;
 static dispatch_queue_t _graylog_queue      = NULL;
