@@ -227,7 +227,7 @@ compress_message(NSData* message,
         // hopefully this doesn't fail...
         GRAYLOG_ERROR(MCGraylogLogFacility,
                       @"Failed to compress message: %d", result);
-        free(deflated_message);
+        free(*deflated_message);
         return -1;
     }
     
@@ -282,8 +282,10 @@ send_log(uint8_t* message, size_t message_size)
             header->sequence = (Byte)i;
             header->total    = (Byte)chunk_count;
             
-            NSMutableData* chunkHeader = [NSMutableData dataWithBytes:header
-                                                               length:12];
+            NSMutableData* chunkHeader =
+            [NSMutableData dataWithBytesNoCopy:header
+                                        length:12
+                                  freeWhenDone:YES];
             [chunkHeader appendData:chunkData];
             chunkData = chunkHeader;
         }
