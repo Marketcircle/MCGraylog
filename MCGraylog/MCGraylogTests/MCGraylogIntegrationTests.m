@@ -23,22 +23,31 @@ static NSPipe* outputPipe;
 
 
 + (void)setUp {
-    NSBundle*   bundle = [NSBundle bundleForClass:[self class]];
-    NSArray* arguments =
-    @[
-      @"-jar", [bundle pathForResource:@"logstash-1.1.12-flatjar" ofType:@"jar"],
-      @"agent",
-      @"-f", [bundle pathForResource:@"logstash" ofType:@"conf"]
-    ];
-
+    logstash   = [[NSTask alloc] init];
     inputPipe  = [[NSPipe alloc] init];
     outputPipe = [[NSPipe alloc] init];
+    
+    NSBundle* bundle = [NSBundle bundleForClass:[self class]];
 
-    logstash   = [NSTask launchedTaskWithLaunchPath:@"/usr/bin/java"
-                                                arguments:arguments];
+    [logstash setLaunchPath:@"/usr/bin/java"];
+    
+    NSString * jarPath = [bundle pathForResource:@"logstash-1.1.12-flatjar"
+                                          ofType:@"jar"];
+    NSString * configFile = [bundle pathForResource:@"logstash"
+                                             ofType:@"conf"];
+    [logstash setArguments:@[@"-jar", jarPath, @"agent", @"-f", configFile]];
     logstash.standardInput  = inputPipe;
     logstash.standardOutput = outputPipe;
+    [logstash launch];
+    
+    // wait until started up...
+    [[inputPipe fileHandleForWriting]
+        writeData:[@"blocking..." dataUsingEncoding:NSASCIIStringEncoding]];
+    [[inputPipe fileHandleForWriting] closeFile];
+    
+    [outputPipe.fileHandleForReading availableData];
 }
+
 
 + (void)tearDown {
     [logstash terminate];
