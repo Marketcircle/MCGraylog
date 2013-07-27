@@ -140,7 +140,7 @@ graylog_deinit()
 {
     if (_graylog_queue) {
         dispatch_barrier_sync(_graylog_queue, ^() {});
-#ifndef __MAC_10_8
+#if __MAC_OS_X_VERSION_MIN_REQUIRED < __MAC_10_8
         dispatch_release(_graylog_queue);
 #endif
         _graylog_queue = NULL;
