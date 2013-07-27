@@ -46,6 +46,13 @@ typedef struct {
 int
 graylog_init(NSURL* graylog_url, GraylogLogLevel init_level)
 {
+    return graylog_init2(graylog_url, init_level, NO);
+}
+
+
+int
+graylog_init2(NSURL* graylog_url, GraylogLogLevel init_level, BOOL sync)
+{
 
     const char* address = [[graylog_url host]
                            cStringUsingEncoding:NSUTF8StringEncoding];
@@ -64,8 +71,9 @@ graylog_init(NSURL* graylog_url, GraylogLogLevel init_level)
     
 
     // TODO: find out why I can't call dispatch_barrier_sync on a global queue
-    _graylog_queue = dispatch_queue_create("com.marketcircle.graylog",
-                                           DISPATCH_QUEUE_CONCURRENT);
+    if (!sync)
+        _graylog_queue = dispatch_queue_create("com.marketcircle.graylog",
+                                               DISPATCH_QUEUE_CONCURRENT);
     
     graylog_socket = CFSocketCreate(kCFAllocatorDefault,
                                     PF_INET,
@@ -324,6 +332,34 @@ send_log(uint8_t* message, size_t message_size)
 }
 
 
+static
+void
+_graylog_log(GraylogLogLevel level,
+             NSString* facility,
+             NSString* message,
+             NSDictionary* data)
+{
+    NSData* formatted_message = format_message(level,
+                                               facility,
+                                               message,
+                                               data);
+    if (!formatted_message)
+        return;
+    
+    uint8_t* compressed_message      = NULL;
+    size_t   compressed_message_size = 0;
+    int compress_result = compress_message(formatted_message,
+                                           &compressed_message,
+                                           &compressed_message_size);
+    if (compress_result)
+        return;
+    
+    send_log(compressed_message, compressed_message_size);
+    
+    free(compressed_message); // don't forget!
+}
+
+
 void
 graylog_log(GraylogLogLevel level,
             NSString* facility,
@@ -337,25 +373,10 @@ graylog_log(GraylogLogLevel level,
         [NSException raise:NSInvalidArgumentException
                     format:@"Facility: %@; Message: %@", facility, message];
     
-    dispatch_async(_graylog_queue, ^() {
-
-        NSData* formatted_message = format_message(level,
-                                                   facility,
-                                                   message,
-                                                   data);
-        if (!formatted_message)
-            return;
-        
-        uint8_t* compressed_message      = NULL;
-        size_t   compressed_message_size = 0;
-        int compress_result = compress_message(formatted_message,
-                                               &compressed_message,
-                                               &compressed_message_size);
-        if (compress_result)
-            return;
-
-        send_log(compressed_message, compressed_message_size);
-        
-        free(compressed_message); // don't forget!
-    });
+    if (_graylog_queue)
+        dispatch_async(_graylog_queue, ^() {
+            _graylog_log(level, facility, message, data);
+        });
+    else
+        _graylog_log(level, facility, message, data);
 }
