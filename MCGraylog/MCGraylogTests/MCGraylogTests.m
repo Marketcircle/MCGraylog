@@ -8,74 +8,81 @@
 
 #import <SenTestingKit/SenTestingKit.h>
 #import "MCGraylog.h"
+#import "MCGraylog+Private.h"
+#import "NSURL+MCGraylog.h"
 
 
 @interface MCGraylogTests : SenTestCase
+@property (nonatomic,strong) MCGraylog* logger;
 @end
 
 
 @implementation MCGraylogTests
 
 
-- (void) setUp
-{
+- (void) setUp {
     [super setUp];
-    graylog_deinit();
-}
-
-
-- (void) tearDown
-{
-    [super tearDown];
-    graylog_deinit();
+    self.logger = [MCGraylog logger];
 }
 
 
 #pragma mark Tests
 
-- (void) testDefaultLogLevelIsDebug { // which is the highest level
-    STAssertEquals(GraylogLogLevelDebug, graylog_log_level(),
+- (void) testDefaultLogLevelIsDebug { // Debug is the highest level
+    STAssertEquals(GraylogLogLevelDebug, self.logger.maximumLevel,
                    @"Default log level is too low");
 }
 
 
-- (void) testCanSetLogLevel {
-    graylog_set_log_level(GraylogLogLevelAlert);
-    STAssertEquals(GraylogLogLevelAlert, graylog_log_level(), nil);
+- (void) testInitHostWithNoPortUsesDefaultPort {
+}
+
+
+- (void) testInitFailureReturnsNilAndSetsError {
+
+    NSError* error = nil;
+    MCGraylog* derp = [[MCGraylog alloc] initWithLevel:GraylogLogLevelError
+                                       toGraylogServer:nil
+                                            asFacility:@"test"
+                                          asynchronous:YES
+                                                 error:&error];
     
-    graylog_set_log_level(GraylogLogLevelInfo);
-    STAssertEquals(GraylogLogLevelInfo, graylog_log_level(), nil);
-
-    graylog_set_log_level(GraylogLogLevelCritical);
-    STAssertEquals(GraylogLogLevelCritical, graylog_log_level(), nil);
-}
-
-
-- (void) testInitSetsLevel {
-    graylog_init([NSURL URLWithString:@"http://localhost:12201/"],
-                 GraylogLogLevelInfo);
-    STAssertEquals(GraylogLogLevelInfo, graylog_log_level(), nil);
-}
-
-
-- (void) testInitFailureReturnsNonZero {
-    int result = graylog_init([NSURL URLWithString:@"cannot-resolve.com:22"],
-                              GraylogLogLevelDebug);
-    STAssertTrue(result != 0, @"graylog_init did not fail!");
+    STAssertNil(derp, @"Somehow initialized with nil host");
 }
 
 
 - (void) testInitWithoutPortUsesDefaultGraylogPort {
-    int result = graylog_init([NSURL URLWithString:@"http://localhost/"],
-                              GraylogLogLevelAlert);
+    NSURL* url = [NSURL URLWithString:@"graylog://localhost/"];
+    
+    NSError* error = nil;
+    MCGraylog* derp = [[MCGraylog alloc] initWithLevel:GraylogLogLevelError
+                                       toGraylogServer:url
+                                            asFacility:@"test"
+                                          asynchronous:YES
+                                                 error:&error];
+    
     // a bit fragile, since we might fail for another reason
-    STAssertTrue(result == 0, @"Setup failed when given no port");
+    STAssertNotNil(derp, @"Setup failed when given no port");
+    STAssertNil(error, @"Got error during ini: %@", error);
 }
 
 
-- (void) testDeinitCanBeCalledSafely {
-    for (int i = 0; i < 100; i++)
-        graylog_deinit();
+
+- (void) testMessageMustNotBeNil {
+    STAssertThrows([self.logger log:GraylogLogLevelError message:nil],
+                   @"graylog_log should throw when given nil facility");
+}
+
+
+- (void) testLoggingEmptyFacility {
+    STAssertThrows([MCGraylog loggerWithLevel:MCGraylogDefaultLogLevel
+                              toGraylogServer:[NSURL localhost:MCGraylogDefaultPort]
+                                   asFacility:@""],
+                   @"Did not catch empty facility name");
+    STAssertThrows([MCGraylog loggerWithLevel:MCGraylogDefaultLogLevel
+                              toGraylogServer:[NSURL localhost:MCGraylogDefaultPort]
+                                   asFacility:nil],
+                   @"Did not catch nil facility name");
 }
 
 

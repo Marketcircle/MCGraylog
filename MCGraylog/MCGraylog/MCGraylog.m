@@ -7,7 +7,8 @@
 //
 
 #import "MCGraylog.h"
-#import "Private Headers/Internals.h"
+#import "Private/MCGraylog+Private.h"
+#import "Private/NSURL+MCGraylog.h"
 
 #import <Availability.h>
 #import <sys/socket.h>
@@ -17,21 +18,16 @@
 #import <netdb.h>
 #import <sys/time.h>
 
-static GraylogLogLevel max_log_level        = GraylogLogLevelDebug;
-static dispatch_queue_t _graylog_queue      = NULL;
-static CFSocketRef graylog_socket           = NULL;
-static NSMutableDictionary* base_dictionary = nil;
-static NSString* hostname                   = nil;
-static const uLong max_chunk_size           = 65507;
-static const Byte  chunked[2]               = {0x1e, 0x0f};
+NSString* const MCGraylogDefaultFacility = @"MCGraylog";
+const size_t MCGraylogDefaultPort = 12201;
+const GraylogLogLevel MCGraylogDefaultLogLevel = GraylogLogLevelDebug;
 
+static const uLong MCGraylogMaxChunkSize = 65507;
+static const Byte  chunked[2]            = {0x1e, 0x0f};
 
-NSString* const MCGraylogLogFacility = @"mcgraylog";
-#define GRAYLOG_DEFAULT_PORT 12201
 #define CHUNKED_SIZE 2
 #define P1 7
 #define P2 31
-
 
 typedef Byte message_id_t[8];
 
@@ -43,59 +39,139 @@ typedef struct {
 } graylog_header;
 
 
-int
-graylog_init(NSURL* graylog_url, GraylogLogLevel init_level)
+
+@implementation MCGraylog
+
++ (MCGraylog*)logger
 {
-    return graylog_init2(graylog_url, init_level, NO);
+    return [self loggerWithLevel:MCGraylogDefaultLogLevel];
+}
+
++ (MCGraylog*)loggerWithLevel:(GraylogLogLevel)initLevel
+{
+    return [self loggerWithLevel:initLevel
+                 toGraylogServer:[NSURL localhost:MCGraylogDefaultPort]];
+}
+
++ (MCGraylog*)loggerWithLevel:(GraylogLogLevel)initLevel
+              toGraylogServer:(NSURL*)host
+{
+    return [self loggerWithLevel:initLevel
+                 toGraylogServer:host
+                      asFacility:MCGraylogDefaultFacility];
+}
+
++ (MCGraylog*)loggerWithLevel:(GraylogLogLevel)initLevel
+              toGraylogServer:(NSURL*)host
+                   asFacility:(NSString*)facility
+{
+    return [self loggerWithLevel:initLevel
+                 toGraylogServer:host
+                      asFacility:facility
+                    asynchronous:YES];
+}
+
++ (MCGraylog*)loggerWithLevel:(GraylogLogLevel)initLevel
+              toGraylogServer:(NSURL*)host
+                   asFacility:(NSString*)facility
+                 asynchronous:(BOOL)async
+{
+    NSError* error = nil;
+    MCGraylog* logger = [[self alloc] initWithLevel:initLevel
+                                    toGraylogServer:host
+                                         asFacility:facility
+                                       asynchronous:async
+                                              error:&error];
+
+    NSAssert(logger, @"Failed to initialize logger: %@", error);
+    
+    return logger;
 }
 
 
-int
-graylog_init2(NSURL* graylog_url, GraylogLogLevel init_level, BOOL sync)
+- (id) initWithLevel:(GraylogLogLevel)initLevel
+     toGraylogServer:(NSURL*)host
+          asFacility:(NSString*)facility
+        asynchronous:(BOOL)async
+               error:(NSError**)error;
 {
-
-    const char* address = [[graylog_url host]
-                           cStringUsingEncoding:NSUTF8StringEncoding];
+    if (![super init]) return nil;
+    
+    const char* address = [host.host cStringUsingEncoding:NSUTF8StringEncoding];
     if (!address) {
-        NSLog(@"nil address given as graylog_url");
-        return -1;
+        *error = [NSError errorWithDomain:NSArgumentDomain
+                                     code:0
+                                 userInfo:@{@"reason": @"nil/empty address"}];
+        return nil;
     }
     
-    NSNumber* port = [graylog_url port];
+    
+    // for the port number, if nothing was specified, we can just use the
+    // default Graylog port number
+    NSNumber* port = host.port;
     if (!port)
-        port = @(GRAYLOG_DEFAULT_PORT);
+        port = @(MCGraylogDefaultPort);
     
-    const char* port_str = [[port stringValue]
-                            cStringUsingEncoding:NSASCIIStringEncoding];
-    int port_num = [port intValue];
+    if (!facility || !facility.length) {
+        *error = [NSError errorWithDomain:NSArgumentDomain
+                                     code:0
+                                 userInfo:@{@"reason": @"nil/empty facility"}];
+        return nil;
+    }
     
-
+    self->_facility = facility;
+    
+    
     // TODO: find out why I can't call dispatch_barrier_sync on a global queue
-    if (!sync)
-        _graylog_queue = dispatch_queue_create("com.marketcircle.graylog",
-                                               DISPATCH_QUEUE_CONCURRENT);
+    if (async) {
+        const char* qname =
+        [[NSString stringWithFormat:@"com.marketcircle.graylog.%@", facility]
+         cStringUsingEncoding:NSUTF8StringEncoding];
+        
+        self->queue = dispatch_queue_create(qname, DISPATCH_QUEUE_CONCURRENT);
+        
+        if (!self->queue) {
+            *error = [NSError errorWithDomain:NSPOSIXErrorDomain
+                                         code:ENOMEM
+                                     userInfo:nil];
+            return nil;
+        }
+    }
     
-    graylog_socket = CFSocketCreate(kCFAllocatorDefault,
-                                    PF_INET,
-                                    SOCK_DGRAM,
-                                    IPPROTO_UDP,
-                                    kCFSocketNoCallBack,
-                                    NULL, // callback function
-                                    NULL); // callback context
+    self->socket = CFSocketCreate(kCFAllocatorDefault,
+                                  PF_INET,
+                                  SOCK_DGRAM,
+                                  IPPROTO_UDP,
+                                  kCFSocketNoCallBack,
+                                  NULL, // callback function
+                                  NULL); // callback context
+    if (!self->socket) {
+        // in production, we should only have errors because
+        // of ENOMEM, but this error might be caused by something
+        // else
+        *error = [NSError errorWithDomain:NSPOSIXErrorDomain
+                                     code:ENOMEM
+                                 userInfo:nil];
+        return nil;
+    }
 
-    
     // TODO: handle IPv6 addresses...
-    struct addrinfo* graylog_info = NULL;
 
-    int getaddr_result = getaddrinfo(address,
-                                     port_str,
-                                     NULL,
-                                     &graylog_info);
+    const char* port_str =
+    [port.stringValue cStringUsingEncoding:NSASCIIStringEncoding];
+
+    struct addrinfo* graylog_info = NULL;
+    int getaddr_result = getaddrinfo(address, port_str, NULL, &graylog_info);
     if (getaddr_result) {
-        NSLog(@"MCGraylog: Failed to resolve address for graylog: %s",
-              gai_strerror(getaddr_result));
-        graylog_deinit();
-        return -1;
+        
+        NSString* message =
+        [NSString stringWithCString:gai_strerror(getaddr_result)
+                           encoding:NSUTF8StringEncoding];
+        
+        *error = [NSError errorWithDomain:@"SocketErrorDomain"
+                                     code:0
+                                 userInfo:@{@"message": message}];
+        return nil;
     }
     
     struct in_addr addr;
@@ -108,104 +184,64 @@ graylog_init2(NSURL* graylog_url, GraylogLogLevel init_level, BOOL sync)
     memset(&graylog_address, 0, sizeof(struct sockaddr_in));
     graylog_address.sin_family      = AF_INET;
     graylog_address.sin_addr.s_addr = inet_addr(inet_ntoa(addr));
-    graylog_address.sin_port        = htons(port_num);
+    graylog_address.sin_port        = htons(port.integerValue);
 
     CFDataRef address_data = CFDataCreate(kCFAllocatorDefault,
                                           (const uint8_t*)&graylog_address,
                                           sizeof(struct sockaddr_in));
 
-    CFSocketError connection_error = CFSocketConnectToAddress(graylog_socket,
+    // timeout of 1 because we aren't actually connecting to anything
+    CFSocketError connection_error = CFSocketConnectToAddress(self->socket,
                                                               address_data,
                                                               1);
     CFRelease(address_data); // done with this guy now
     
     if (connection_error != kCFSocketSuccess) {
-        NSLog(@"MCGraylog: Failed to bind socket to server address [%ld]",
-              connection_error);
-        graylog_deinit();
-        return -1;
+        *error = [NSError errorWithDomain:@"SocketErrorDomain"
+                                     code:0
+                                 userInfo:@{@"message":
+                                                @"Failed to bind socket"}];
+        return nil;
     }
 
-    // TODO: KVO the hostname
-    hostname = [[NSHost currentHost] localizedName];
-    if (!hostname) {
-        NSLog(@"MCGraylog: Failed to determine hostname");
-        graylog_deinit();
-        return -1;
-    }
+    self.maximumLevel = initLevel;
     
-    base_dictionary = [@{ @"version": @"1.0",
-                          @"host":    hostname, } mutableCopy];
-    
-    max_log_level = init_level;
-    
-    return 0; // successfully completed!
+    return self;
 }
 
 
-void
-graylog_deinit()
-{
-    if (_graylog_queue) {
-        dispatch_barrier_sync(_graylog_queue, ^() {});
+- (void) dealloc {
+
 #if __MAC_OS_X_VERSION_MIN_REQUIRED < __MAC_10_8
-        dispatch_release(_graylog_queue);
+    if (self->queue)
+        dispatch_release(self->queue);
 #endif
-        _graylog_queue = NULL;
+    
+    if (self->socket) {
+        CFSocketInvalidate(self->socket);
+        CFRelease(self->socket);
     }
     
-    if (graylog_socket) {
-        CFSocketInvalidate(graylog_socket);
-        CFRelease(graylog_socket);
-        graylog_socket = NULL;
-    }
-    
-    if (base_dictionary) {
-        base_dictionary = nil;
-    }
-    
-    if (hostname) {
-        hostname = nil;
-    }
-    
-    max_log_level = GraylogLogLevelDebug;
-}
-
-
-GraylogLogLevel
-graylog_log_level()
-{
-    return max_log_level;
-}
-
-
-void
-graylog_set_log_level(GraylogLogLevel new_level)
-{
-    max_log_level = new_level;
-}
-
-
-dispatch_queue_t
-graylog_queue()
-{
-    return _graylog_queue;
 }
 
 
 static
 NSData*
-format_message(GraylogLogLevel lvl,
-               NSString* facility,
+format_message(MCGraylog* self,
+               GraylogLogLevel level,
                NSString* message,
                NSDictionary* xtra_data)
 {
-    NSMutableDictionary* dictionary = [base_dictionary mutableCopy];
-    dictionary[@"timestamp"]     = @([[NSDate date] timeIntervalSince1970]);
-    dictionary[@"level"]         = @(lvl);
-    dictionary[@"facility"]      = facility;
-    dictionary[@"short_message"] = message;
+    NSMutableDictionary* dictionary =
+    [NSMutableDictionary dictionaryWithCapacity:8];
     
+    dictionary[@"version"]       = @"1.0";
+    dictionary[@"host"]          = NSHost.currentHost.localizedName;
+    dictionary[@"timestamp"]     = @([[NSDate date] timeIntervalSince1970]);
+    dictionary[@"level"]         = @(level),
+    dictionary[@"facility"]      = self->_facility;
+    dictionary[@"short_message"] = message;
+
     [xtra_data enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL* stop) {
         // TODO: do we just want to silently ignore the @"id" key?
         if (![key isEqual: @"id"])
@@ -221,15 +257,14 @@ format_message(GraylogLogLevel lvl,
                                                  error:&error];
     }
     @catch (NSException* exception) {
-        GRAYLOG_ERROR(MCGraylogLogFacility,
-                      @"Failed to serialize message: %@", exception);
+        [self log:GraylogLogLevelError
+          message:@"Logger failed to serialize message: %@", exception];
         return nil;
     }
     
     if (error) {
-        // hopefully this doesn't fail as well...
-        GRAYLOG_ERROR(MCGraylogLogFacility,
-                      @"Failed to serialize message: %@", error);
+        [self log:GraylogLogLevelError
+          message:@"Logger failed to serialize message: %@", error];
         return nil;
     }
 
@@ -239,7 +274,8 @@ format_message(GraylogLogLevel lvl,
 
 static
 int
-compress_message(NSData* message,
+compress_message(MCGraylog* self,
+                 NSData* message,
                  uint8_t** deflated_message,
                  size_t* deflated_message_size)
 {
@@ -253,9 +289,8 @@ compress_message(NSData* message,
                           [message length]);
     
     if (result != Z_OK) {
-        // hopefully this doesn't fail...
-        GRAYLOG_ERROR(MCGraylogLogFacility,
-                      @"Failed to compress message: %d", result);
+        [self log:GraylogLogLevelError
+          message:@"Logger failed to compress message: %d", result];
         free(*deflated_message);
         return -1;
     }
@@ -266,7 +301,9 @@ compress_message(NSData* message,
 
 static
 void
-send_log(uint8_t* message, size_t message_size)
+send_log(MCGraylog* self,
+         uint8_t* message,
+         size_t message_size)
 {
     // First, generate a message_id hash from hostname and a timestamp;
 
@@ -275,31 +312,36 @@ send_log(uint8_t* message, size_t message_size)
     struct timeval time;
     gettimeofday(&time, NULL);
     
-    NSString* base_hash =
-    [hostname stringByAppendingString:[@(time.tv_usec) stringValue]];
-    
     const char* message_string =
-    [base_hash cStringUsingEncoding:NSUTF8StringEncoding];
+    [[NSHost.currentHost.localizedName
+     stringByAppendingString:[@(time.tv_usec) stringValue]]
+     cStringUsingEncoding:NSUTF8StringEncoding];
+    
+    // probably can't log to graylog at this point, just use NSLog
+    if (!message_string) {
+        NSLog(@"%@ Logger failed to generate a hash", self->_facility);
+        return;
+    }
     
     // calculate hash
     uint64 hash = P1;
-    for (const char* p = message_string; *p != 0; p++)
+    for (const char* p = message_string; *p; p++)
         hash = hash * P2 + *p;
 
     // calculate the number of chunks that we will need to make
-    uLong chunk_count = message_size / max_chunk_size;
-    if (message_size % max_chunk_size)
+    uLong chunk_count = message_size / MCGraylogMaxChunkSize;
+    if (message_size % MCGraylogMaxChunkSize)
         chunk_count++;
 
     size_t remain = message_size;
     for (int i = 0; i < chunk_count; i++) {
-        size_t bytes_to_copy = MIN(remain, max_chunk_size);
+        size_t bytes_to_copy = MIN(remain, MCGraylogMaxChunkSize);
         remain -= bytes_to_copy;
 
         NSData* chunk =
-            [NSData dataWithBytesNoCopy:(message + (i*max_chunk_size))
-                                 length:bytes_to_copy
-                           freeWhenDone:NO];
+        [NSData dataWithBytesNoCopy:(message + (i * MCGraylogMaxChunkSize))
+                             length:bytes_to_copy
+                       freeWhenDone:NO];
         
         // Append chunk header if we're sending multiple chunks
         if (chunk_count > 1) {
@@ -310,22 +352,21 @@ send_log(uint8_t* message, size_t message_size)
             header.sequence = (Byte)i;
             header.total    = (Byte)chunk_count;
             
-            NSMutableData* new_chunk =
-                [[NSMutableData alloc]
-                    initWithCapacity:(sizeof(graylog_header) + chunk.length)];
-
+            NSMutableData* new_chunk = [[NSMutableData alloc]
+                initWithCapacity:(sizeof(graylog_header) + chunk.length)];
             [new_chunk appendBytes:&header length:sizeof(graylog_header)];
             [new_chunk appendData:chunk];
             chunk = new_chunk;
         }
 
-        CFSocketError send_error = CFSocketSendData(graylog_socket,
+        CFSocketError send_error = CFSocketSendData(self->socket,
                                                     NULL,
                                                     (__bridge CFDataRef)chunk,
                                                     1);
         if (send_error)
-            GRAYLOG_ERROR(MCGraylogLogFacility,
-                          @"SendData failed: %ldl", send_error);
+            NSLog(@"%@ Logger failed to send to graylog server: %ld",
+                  self->_facility,
+                  send_error);
         
     }
 
@@ -334,13 +375,13 @@ send_log(uint8_t* message, size_t message_size)
 
 static
 void
-_graylog_log(GraylogLogLevel level,
-             NSString* facility,
-             NSString* message,
-             NSDictionary* data)
+graylog_log(MCGraylog* self,
+            GraylogLogLevel level,
+            NSString* message,
+            NSDictionary* data)
 {
-    NSData* formatted_message = format_message(level,
-                                               facility,
+    NSData* formatted_message = format_message(self,
+                                               level,
                                                message,
                                                data);
     if (!formatted_message)
@@ -348,35 +389,43 @@ _graylog_log(GraylogLogLevel level,
     
     uint8_t* compressed_message      = NULL;
     size_t   compressed_message_size = 0;
-    int compress_result = compress_message(formatted_message,
+    int compress_result = compress_message(self,
+                                           formatted_message,
                                            &compressed_message,
                                            &compressed_message_size);
     if (compress_result)
         return;
     
-    send_log(compressed_message, compressed_message_size);
+    send_log(self, compressed_message, compressed_message_size);
     
     free(compressed_message); // don't forget!
 }
 
 
-void
-graylog_log(GraylogLogLevel level,
-            NSString* facility,
-            NSString* message,
-            NSDictionary *data)
-{
+- (void) log:(GraylogLogLevel)level message:(NSString *)message, ... {
+    va_list args;
+    [self log:level
+      message:[[NSString alloc] initWithFormat:message arguments:args]
+         data:nil];
+}
+
+
+- (void) log:(GraylogLogLevel)level
+     message:(NSString *)message
+        data:(NSDictionary *)data {
+    
     // ignore messages that are not important enough to log
-    if (level > max_log_level) return;
+    if (level > self->_maximumLevel) return;
     
-    if (!(facility && message))
-        [NSException raise:NSInvalidArgumentException
-                    format:@"Facility: %@; Message: %@", facility, message];
+    NSAssert(message, @"Message cannot be nil");
     
-    if (_graylog_queue)
-        dispatch_async(_graylog_queue, ^() {
-            _graylog_log(level, facility, message, data);
+    if (self->queue)
+        dispatch_async(self->queue, ^() {
+            graylog_log(self, level, message, data);
         });
     else
-        _graylog_log(level, facility, message, data);
+        graylog_log(self, level, message, data);
 }
+
+
+@end

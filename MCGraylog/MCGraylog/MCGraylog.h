@@ -17,12 +17,81 @@ typedef enum {
     GraylogLogLevelCritical      = 2,
     GraylogLogLevelError         = 3,
     GraylogLogLevelWarning       = 4,
-    GraylogLogLevelWarn          = 4,
     GraylogLogLevelNotice        = 5,
     GraylogLogLevelInformational = 6,
-    GraylogLogLevelInfo          = 6,
     GraylogLogLevelDebug         = 7
 } GraylogLogLevel;
+
+
+extern NSString* const MCGraylogDefaultFacility;
+extern const size_t MCGraylogDefaultPort;
+extern const GraylogLogLevel MCGraylogDefaultLogLevel;
+
+
+
+@interface MCGraylog : NSObject {
+    CFSocketRef      socket;
+    dispatch_queue_t queue;
+};
+
+
+/**
+ */
++ (MCGraylog*)logger;
+
+/**
+ */
++ (MCGraylog*)loggerWithLevel:(GraylogLogLevel)initLevel;
+
+/**
+ */
++ (MCGraylog*)loggerWithLevel:(GraylogLogLevel)initLevel
+              toGraylogServer:(NSURL*)host;
+
+/**
+ */
++ (MCGraylog*)loggerWithLevel:(GraylogLogLevel)initLevel
+              toGraylogServer:(NSURL*)host
+                   asFacility:(NSString*)facility;
+
+/**
+ *
+ * @param initLevel
+ * @param host
+ * @param facility
+ * @param async
+ **/
++ (MCGraylog*)loggerWithLevel:(GraylogLogLevel)initLevel
+              toGraylogServer:(NSURL*)host
+                   asFacility:(NSString*)facility
+                 asynchronous:(BOOL)async;
+
+
+- (id) initWithLevel:(GraylogLogLevel)initLevel
+     toGraylogServer:(NSURL*)host
+          asFacility:(NSString*)facility
+        asynchronous:(BOOL)async
+               error:(NSError**)error;
+
+
+@property (nonatomic,strong,readonly) NSString* facility;
+
+@property (nonatomic) GraylogLogLevel maximumLevel;
+
+
+- (void) log:(GraylogLogLevel)level
+     message:(NSString*)message, ...;
+
+- (void) log:(GraylogLogLevel)level
+     message:(NSString*)message
+        data:(NSDictionary*)data;
+
+// TODO:
+//- (void) logError:(NSError*)error;
+//- (void) logException:(NSException*)exception;
+
+
+@end
 
 
 #pragma mark Init/Deinit
@@ -34,40 +103,9 @@ typedef enum {
  *        if no port number is given, then the default Graylog2 port is used
  * @param level minimum log level required to actually send messages to graylog;
  *        if a message is logged with a higher level it will be ignored
- * @return 0 on success, otherwise -1.
- */
-int graylog_init(NSURL* graylog_url, GraylogLogLevel level);
-
-/**
- * Perform some up front work needed for all future log messages
- *
- * @param graylog_url The URL (host and port) where Graylog2 is listening;
- *        if no port number is given, then the default Graylog2 port is used
- * @param level minimum log level required to actually send messages to graylog;
- *        if a message is logged with a higher level it will be ignored
  * @param sync Whether or not to make all logging synchronous
  * @return 0 on success, otherwise -1.
  */
-int graylog_init2(NSURL* graylog_url, GraylogLogLevel level, BOOL sync);
-
-
-/**
- * Free any global state that was created by graylog_init.
- */
-void graylog_deinit();
-
-
-#pragma mark Properties
-
-/**
- * @return the current log level;
- */
-GraylogLogLevel graylog_log_level();
-
-/**
- * @param level the new log level
- */
-void graylog_set_log_level(GraylogLogLevel level);
 
 
 #pragma mark Logging
@@ -84,37 +122,3 @@ void graylog_set_log_level(GraylogLogLevel level);
  * @param data Any additional information that might be useful that is JSON
  *             serializable (e.g. numbers, strings, arrays, dictionaries)
  */
-void graylog_log(GraylogLogLevel lvl,
-                 NSString* facility,
-                 NSString* message,
-                 NSDictionary* data);
-
-
-#define GRAYLOG_LOG(level, facility, format, ...) {                         \
-    NSString* message = [NSString stringWithFormat:format, ##__VA_ARGS__];  \
-    graylog_log(level, facility, message, nil);                             \
-}
-
-#define GRAYLOG_EMERGENCY(facility, format, ...) \
-    GRAYLOG_LOG(GraylogLogLevelEmergency, facility, format, ##__VA_ARGS__)
-
-#define GRAYLOG_ALERT(facility, format, ...) \
-    GRAYLOG_LOG(GraylogLogLevelAlert, facility, format, ##__VA_ARGS__)
-
-#define GRAYLOG_CRITICAL(facility, format, ...) \
-    GRAYLOG_LOG(GraylogLogLevelCritical, facility, format, ##__VA_ARGS__)
-
-#define GRAYLOG_ERROR(facility, format, ...) \
-    GRAYLOG_LOG(GraylogLogLevelError, facility, format, ##__VA_ARGS__)
-
-#define GRAYLOG_WARN(facility, format, ...) \
-    GRAYLOG_LOG(GraylogLogLevelWarn, facility, format, ##__VA_ARGS__)
-
-#define GRAYLOG_NOTICE(facility, format, ...) \
-    GRAYLOG_LOG(GraylogLogLevelNotice, facility, format, ##__VA_ARGS__)
-
-#define GRAYLOG_INFO(facility, format, ...) \
-    GRAYLOG_LOG(GraylogLogLevelInfo, facility, format, ##__VA_ARGS__)
-
-#define GRAYLOG_DEBUG(facility, format, ...) \
-    GRAYLOG_LOG(GraylogLogLevelDebug, facility, format, ##__VA_ARGS__)
