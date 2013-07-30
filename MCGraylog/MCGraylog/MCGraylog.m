@@ -293,35 +293,35 @@ send_log(uint8_t* message, size_t message_size)
 
     size_t remain = message_size;
     for (int i = 0; i < chunk_count; i++) {
-        char*  chunk         = malloc(max_chunk_size);
         size_t bytes_to_copy = MIN(remain, max_chunk_size);
-        memcpy(chunk, message + (i * max_chunk_size), bytes_to_copy);
         remain -= bytes_to_copy;
-        
-        NSData *chunkData = [NSData dataWithBytesNoCopy:chunk
-                                                 length:bytes_to_copy
-                                           freeWhenDone:YES];
+
+        NSData* chunk =
+            [NSData dataWithBytesNoCopy:(message + (i*max_chunk_size))
+                                 length:bytes_to_copy
+                           freeWhenDone:NO];
         
         // Append chunk header if we're sending multiple chunks
         if (chunk_count > 1) {
             
-            graylog_header* header = malloc(sizeof(graylog_header));
-            memcpy(header->message_id, &hash, sizeof(message_id_t));
-            memcpy(header->chunked, &chunked, CHUNKED_SIZE);
-            header->sequence = (Byte)i;
-            header->total    = (Byte)chunk_count;
+            graylog_header header;
+            memcpy(&header.message_id, &hash, sizeof(message_id_t));
+            memcpy(&header.chunked, &chunked, CHUNKED_SIZE);
+            header.sequence = (Byte)i;
+            header.total    = (Byte)chunk_count;
             
-            NSMutableData* chunkHeader =
-            [NSMutableData dataWithBytesNoCopy:header
-                                        length:12
-                                  freeWhenDone:YES];
-            [chunkHeader appendData:chunkData];
-            chunkData = chunkHeader;
+            NSMutableData* new_chunk =
+                [[NSMutableData alloc]
+                    initWithCapacity:(sizeof(graylog_header) + chunk.length)];
+
+            [new_chunk appendBytes:&header length:sizeof(graylog_header)];
+            [new_chunk appendData:chunk];
+            chunk = new_chunk;
         }
 
         CFSocketError send_error = CFSocketSendData(graylog_socket,
                                                     NULL,
-                                                    (__bridge CFDataRef)chunkData,
+                                                    (__bridge CFDataRef)chunk,
                                                     1);
         if (send_error)
             GRAYLOG_ERROR(MCGraylogLogFacility,
