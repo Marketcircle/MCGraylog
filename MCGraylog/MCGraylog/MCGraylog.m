@@ -42,91 +42,143 @@ typedef struct {
 } graylog_header;
 
 
+#pragma mark Init
+
+static
 int
-graylog_init(NSURL* graylog_url, GraylogLogLevel init_level)
+graylog_init_socket(NSURL* graylog_url)
 {
-    return graylog_init2(graylog_url, init_level, NO);
-}
-
-
-int
-graylog_init2(NSURL* graylog_url, GraylogLogLevel init_level, BOOL sync)
-{
-
-    const char* address = [[graylog_url host]
-                           cStringUsingEncoding:NSUTF8StringEncoding];
-    if (!address) {
+    // get the host name string
+    if (!graylog_url.host) {
         NSLog(@"nil address given as graylog_url");
         return -1;
     }
     
-    NSNumber* port = [graylog_url port];
+    // get the port number
+    int port = graylog_url.port.intValue;
     if (!port)
-        port = @(GRAYLOG_DEFAULT_PORT);
+        port = GRAYLOG_DEFAULT_PORT;
     
-    const char* port_str = [[port stringValue]
-                            cStringUsingEncoding:NSASCIIStringEncoding];
-    int port_num = [port intValue];
+    // need to cast the host to a CFStringRef for the next part
+    CFStringRef hostname = (__bridge CFStringRef)(graylog_url.host);
     
-
-    // TODO: find out why I can't call dispatch_barrier_sync on a global queue
-    if (!sync)
-        _graylog_queue = dispatch_queue_create("com.marketcircle.graylog",
-                                               DISPATCH_QUEUE_CONCURRENT);
+    // try to resolve the hostname
+    CFHostRef host = CFHostCreateWithName(kCFAllocatorDefault, hostname);
     
-    graylog_socket = CFSocketCreate(kCFAllocatorDefault,
-                                    PF_INET,
-                                    SOCK_DGRAM,
-                                    IPPROTO_UDP,
-                                    kCFSocketNoCallBack,
-                                    NULL, // callback function
-                                    NULL); // callback context
-
-    
-    // TODO: handle IPv6 addresses...
-    struct addrinfo* graylog_info = NULL;
-
-    int getaddr_result = getaddrinfo(address,
-                                     port_str,
-                                     NULL,
-                                     &graylog_info);
-    if (getaddr_result) {
-        NSLog(@"MCGraylog: Failed to resolve address for graylog: %s",
-              gai_strerror(getaddr_result));
-        graylog_deinit();
+    if (!host) {
+        NSLog(@"Could not allocate CFHost to lookup IP address of graylog");
         return -1;
     }
     
-    struct in_addr addr;
-    memset(&addr, 0, sizeof(struct in_addr));
-    addr.s_addr = ((struct sockaddr_in*)(graylog_info->ai_addr))->sin_addr.s_addr;
-
-    freeaddrinfo(graylog_info); // done with this guy now
+    CFStreamError stream_error;
+    if (!CFHostStartInfoResolution(host, kCFHostAddresses, &stream_error)) {
+        NSLog(@"Failed to resolve IP address for %@ [%ld, %d]",
+              graylog_url, stream_error.domain, stream_error.error);
+        CFRelease(host);
+        return -1;
+    }
     
-    struct sockaddr_in graylog_address;
-    memset(&graylog_address, 0, sizeof(struct sockaddr_in));
-    graylog_address.sin_family      = AF_INET;
-    graylog_address.sin_addr.s_addr = inet_addr(inet_ntoa(addr));
-    graylog_address.sin_port        = htons(port_num);
-
-    CFDataRef address_data = CFDataCreate(kCFAllocatorDefault,
-                                          (const uint8_t*)&graylog_address,
-                                          sizeof(struct sockaddr_in));
-
-    CFSocketError connection_error = CFSocketConnectToAddress(graylog_socket,
-                                                              address_data,
-                                                              1);
-    CFRelease(address_data); // done with this guy now
+    Boolean has_been_resolved = false;
+    CFArrayRef addresses = CFHostGetAddressing(host, &has_been_resolved);
+    if (!has_been_resolved) {
+        NSLog(@"Failed to get addresses for %@", graylog_url);
+        CFRelease(host);
+        return -1;
+    }
     
-    if (connection_error != kCFSocketSuccess) {
-        NSLog(@"MCGraylog: Failed to bind socket to server address [%ld]",
-              connection_error);
+
+    size_t addresses_count = CFArrayGetCount(addresses);
+    
+    for (size_t i = 0; i < addresses_count; i++) {
+        
+        CFDataRef address = (CFDataRef)CFArrayGetValueAtIndex(addresses, i);
+        
+        // make a copy that we can futz with
+        CFDataRef address_info = CFDataCreateCopy(kCFAllocatorDefault, address);
+        int pf_version = PF_INET6;
+        
+        if (CFDataGetLength(address) == sizeof(struct sockaddr_in6)) {
+            struct sockaddr_in6* addr =
+            (struct sockaddr_in6*)CFDataGetBytePtr(address_info);
+            addr->sin6_port = htons(port);
+            pf_version = PF_INET6;
+        }
+        else if (CFDataGetLength(address) == sizeof(struct sockaddr_in)) {
+            struct sockaddr_in* addr =
+            (struct sockaddr_in*)CFDataGetBytePtr(address_info);
+            addr->sin_port = htons(port);
+            pf_version = PF_INET;
+        }
+        else {
+            // leak memory because this exception should not be caught
+            [NSException raise:NSInternalInconsistencyException
+                        format:@"Got an address of weird length: %@",
+                               (__bridge NSData*)address];
+        }
+        
+        graylog_socket = CFSocketCreate(kCFAllocatorDefault,
+                                        pf_version,
+                                        SOCK_DGRAM,
+                                        IPPROTO_UDP,
+                                        kCFSocketNoCallBack,
+                                        NULL, // callback function
+                                        NULL); // callback context
+        
+        // completely bail
+        if (!graylog_socket) {
+            NSLog(@"Failed to allocate socket for graylog");
+            CFRelease(address_info);
+            CFRelease(host);
+            return -1;
+        }
+        
+        // 1 second of timeout is more than enough, UDP "connect" should
+        // only need to set a couple of things in kernel land
+        switch (CFSocketConnectToAddress(graylog_socket, address_info, 1)) {
+            case kCFSocketSuccess:
+                CFRelease(address_info);
+                CFRelease(host);
+                return 0;
+                
+            case kCFSocketError:
+                if (i == (addresses_count - 1))
+                    NSLog(@"Failed to connect to all addresses of %@",
+                          graylog_url);
+                CFRelease(socket);
+                CFRelease(address_info);
+                continue;
+                
+            case kCFSocketTimeout:
+            default:
+                CFRelease(socket);
+                CFRelease(address_info);
+                CFRelease(host);
+                [NSException raise:NSInternalInconsistencyException
+                            format:@"Somehow timed out performing UDP connect"];
+                return -1;
+        }
+    }
+    
+    
+    CFRelease(host);
+    return -1;
+}
+
+
+int
+graylog_init(NSURL* graylog_url, GraylogLogLevel init_level)
+{
+    // must create our own concurrent queue radar://14611706
+    _graylog_queue = dispatch_queue_create("com.marketcircle.graylog",
+                                           DISPATCH_QUEUE_CONCURRENT);
+    if (!_graylog_queue) {
         graylog_deinit();
         return -1;
     }
     
     max_log_level = init_level;
 
+    if (graylog_init_socket(graylog_url) == -1) {
         graylog_deinit();
         return -1;
     }
