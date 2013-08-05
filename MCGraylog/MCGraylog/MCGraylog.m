@@ -42,7 +42,7 @@ typedef struct {
 } graylog_header;
 
 
-#pragma mark Init
+#pragma mark - Init
 
 static
 int
@@ -206,7 +206,7 @@ graylog_deinit()
 }
 
 
-#pragma mark Accessors
+#pragma mark - Accessors
 
 GraylogLogLevel
 graylog_log_level()
@@ -248,13 +248,10 @@ format_message(GraylogLogLevel lvl,
     dict[@"short_message"] = message;
     
     [xtra_data enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL* stop) {
-        if ([key isEqual: @"id"]) {
-            GRAYLOG_WARN(MCGraylogLogFacility,
-                         @"Ignoring id in userInfo key for log: %@", xtra_data);
-        }
-        else {
+        if ([key isEqual: @"id"])
+            dict[@"_userInfo_id"] = obj;
+        else
             dict[[NSString stringWithFormat:@"_%@", key]] = obj;
-        }
     }];
     
 
