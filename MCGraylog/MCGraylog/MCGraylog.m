@@ -17,13 +17,12 @@
 #import <netdb.h>
 #import <sys/time.h>
 
-static GraylogLogLevel max_log_level        = GraylogLogLevelDebug;
-static dispatch_queue_t _graylog_queue      = NULL;
-static CFSocketRef graylog_socket           = NULL;
-static NSMutableDictionary* base_dictionary = nil;
-static NSString* hostname                   = nil;
-static const uLong max_chunk_size           = 65507;
-static const Byte  chunked[2]               = {0x1e, 0x0f};
+
+static GraylogLogLevel max_log_level   = GraylogLogLevelDebug;
+static dispatch_queue_t _graylog_queue = NULL;
+static CFSocketRef graylog_socket      = NULL;
+static const uLong max_chunk_size      = 65507;
+static const Byte  chunked[2]          = {0x1e, 0x0f};
 
 
 NSString* const MCGraylogLogFacility = @"mcgraylog";
@@ -125,21 +124,14 @@ graylog_init2(NSURL* graylog_url, GraylogLogLevel init_level, BOOL sync)
         graylog_deinit();
         return -1;
     }
+    
+    max_log_level = init_level;
 
-    // TODO: KVO the hostname
-    hostname = [[NSHost currentHost] localizedName];
-    if (!hostname) {
-        NSLog(@"MCGraylog: Failed to determine hostname");
         graylog_deinit();
         return -1;
     }
     
-    base_dictionary = [@{ @"version": @"1.0",
-                          @"host":    hostname, } mutableCopy];
-    
-    max_log_level = init_level;
-    
-    return 0; // successfully completed!
+    return 0;
 }
 
 
@@ -158,17 +150,11 @@ graylog_deinit()
         graylog_socket = NULL;
     }
     
-    if (base_dictionary) {
-        base_dictionary = nil;
-    }
-    
-    if (hostname) {
-        hostname = nil;
-    }
-    
     max_log_level = GraylogLogLevelDebug;
 }
 
+
+#pragma mark Accessors
 
 GraylogLogLevel
 graylog_log_level()
@@ -191,6 +177,8 @@ graylog_queue()
 }
 
 
+#pragma mark - Logging
+
 static
 NSData*
 format_message(GraylogLogLevel lvl,
@@ -198,23 +186,30 @@ format_message(GraylogLogLevel lvl,
                NSString* message,
                NSDictionary* xtra_data)
 {
-    NSMutableDictionary* dictionary = [base_dictionary mutableCopy];
-    dictionary[@"timestamp"]     = @([[NSDate date] timeIntervalSince1970]);
-    dictionary[@"level"]         = @(lvl);
-    dictionary[@"facility"]      = facility;
-    dictionary[@"short_message"] = message;
+    NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithCapacity:8];
+
+    dict[@"version"]       = @"1.0";
+    dict[@"host"]          = NSHost.currentHost.localizedName;
+    dict[@"timestamp"]     = @(NSDate.date.timeIntervalSince1970);
+    dict[@"facility"]      = facility;
+    dict[@"level"]         = @(lvl);
+    dict[@"short_message"] = message;
     
     [xtra_data enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL* stop) {
-        // TODO: do we just want to silently ignore the @"id" key?
-        if (![key isEqual: @"id"])
-            dictionary[[NSString stringWithFormat:@"_%@", key]] = obj;
+        if ([key isEqual: @"id"]) {
+            GRAYLOG_WARN(MCGraylogLogFacility,
+                         @"Ignoring id in userInfo key for log: %@", xtra_data);
+        }
+        else {
+            dict[[NSString stringWithFormat:@"_%@", key]] = obj;
+        }
     }];
     
 
     NSError* error = nil;
     NSData*   data = nil;
     @try {
-        data = [NSJSONSerialization dataWithJSONObject:dictionary
+        data = [NSJSONSerialization dataWithJSONObject:dict
                                                options:0
                                                  error:&error];
     }
@@ -273,15 +268,13 @@ send_log(uint8_t* message, size_t message_size)
     struct timeval time;
     gettimeofday(&time, NULL);
     
-    NSString* base_hash =
-    [hostname stringByAppendingString:[@(time.tv_usec) stringValue]];
-    
-    const char* message_string =
-    [base_hash cStringUsingEncoding:NSUTF8StringEncoding];
+    NSString* nshash = [NSHost.currentHost.localizedName
+                        stringByAppendingString:[@(time.tv_usec) stringValue]];
+    const char* chash = [nshash cStringUsingEncoding:NSUTF8StringEncoding];
     
     // calculate hash
     uint64 hash = P1;
-    for (const char* p = message_string; *p != 0; p++)
+    for (const char* p = chash; *p != 0; p++)
         hash = hash * P2 + *p;
 
     // calculate the number of chunks that we will need to make
