@@ -375,34 +375,6 @@ send_log(uint8_t* message, size_t message_size)
 }
 
 
-static
-void
-_graylog_log(GraylogLogLevel level,
-             NSString* facility,
-             NSString* message,
-             NSDictionary* data)
-{
-    NSData* formatted_message = format_message(level,
-                                               facility,
-                                               message,
-                                               data);
-    if (!formatted_message)
-        return;
-    
-    uint8_t* compressed_message      = NULL;
-    size_t   compressed_message_size = 0;
-    int compress_result = compress_message(formatted_message,
-                                           &compressed_message,
-                                           &compressed_message_size);
-    if (compress_result)
-        return;
-    
-    send_log(compressed_message, compressed_message_size);
-    
-    free(compressed_message); // don't forget!
-}
-
-
 void
 graylog_log(GraylogLogLevel level,
             NSString* facility,
@@ -415,11 +387,25 @@ graylog_log(GraylogLogLevel level,
     if (!(facility && message))
         [NSException raise:NSInvalidArgumentException
                     format:@"Facility: %@; Message: %@", facility, message];
+
+    if (!_graylog_queue) return;
     
-    if (_graylog_queue)
-        dispatch_async(_graylog_queue, ^() {
-            _graylog_log(level, facility, message, data);
-        });
-    else
-        _graylog_log(level, facility, message, data);
+    dispatch_async(_graylog_queue, ^() {
+        NSData* formatted_message = format_message(level,
+                                                   facility,
+                                                   message,
+                                                   data);
+        if (!formatted_message) return;
+            
+        uint8_t* compressed_message      = NULL;
+        size_t   compressed_message_size = 0;
+        int compress_result = compress_message(formatted_message,
+                                               &compressed_message,
+                                               &compressed_message_size);
+        if (compress_result) return;
+            
+        send_log(compressed_message, compressed_message_size);
+            
+        free(compressed_message); // don't forget!
+    });
 }
