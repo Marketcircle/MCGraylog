@@ -82,11 +82,12 @@ static NSPipe* outputPipe;
 - (void)tearDown {
     graylog_deinit();
     outputPipe.fileHandleForReading.readabilityHandler = NULL;
-#ifndef __MAC_10_8
-    dispatch_release(self.output_semaphore);
-#endif
-    
     [super tearDown];
+}
+
+
+- (void) dealloc {
+    DISPATCH_RELEASE(self.output_semaphore);
 }
 
 
