@@ -79,4 +79,10 @@
 }
 
 
+- (void) testUnreachableHostFailsGracefully {
+    NSURL* unresolvable = [NSURL URLWithString:@"graylog://oetuhoenutheo.com/"];
+    int result = graylog_init(unresolvable, GraylogLogLevelAlert);
+    STAssertEquals(-1, result, @"Managed to resolve the unresolvable");
+}
+
 @end

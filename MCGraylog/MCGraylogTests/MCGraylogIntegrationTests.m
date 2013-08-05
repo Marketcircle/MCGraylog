@@ -131,8 +131,8 @@ static NSPipe* outputPipe;
 
 
 #define WAIT_FOR_RESPONSE NSDictionary* response = [self logstashResponse]
-#define WAIT_FOR_NO_RESPONSE                            \
-    dispatch_barrier_sync(graylog_queue(), ^() {}); \
+#define WAIT_FOR_NO_RESPONSE                                                \
+    if (graylog_queue()) dispatch_barrier_sync(graylog_queue(), ^() {});    \
     NSDictionary* response = [self waitForResponse:1];
 
 
@@ -205,6 +205,17 @@ static NSPipe* outputPipe;
 }
 
 
+- (void) testLoggingIDUserInfoKeyIsMangled {
+    graylog_log(GraylogLogLevelWarning,
+                @"test",
+                @"message",
+                @{ @"id": @"hello" });
+    WAIT_FOR_RESPONSE;
+    STAssertNil(response[@"@fields"][@"_id"], @"hello", nil);
+    STAssertEqualObjects(response[@"@fields"][@"_userInfo_id"], @"hello", nil);
+}
+
+
 - (void) testManyConcurrentLogs {
     STFail(@"Finish implementing me!");
     return;
@@ -228,6 +239,9 @@ static NSPipe* outputPipe;
         string = [string stringByAppendingString:string];
     
     GRAYLOG_NOTICE(@"test", @"%@", string);
+    WAIT_FOR_RESPONSE;
+    STAssertEqualObjects(response[@"@fields"][@"short_message"], string,
+                         @"Message was corrupt?");
 }
 
 
@@ -280,5 +294,13 @@ static NSPipe* outputPipe;
                    @"graylog_log should throw when given nil message");
 }
 
+
+- (void) testLoggingSilentlyIgnoredIfNotInitialized {
+    return;
+    graylog_deinit();
+    GRAYLOG_ALERT(@"test", @"message");
+    WAIT_FOR_NO_RESPONSE;
+    STAssertNil(response, @"Got a message before init");
+}
 
 @end
