@@ -79,15 +79,16 @@ void graylog_set_log_level(GraylogLogLevel level);
  *
  * @param lvl Log level, the severity of the message
  * @param facility Arbitrary string indicating the subsystem the message came
- *                 from (i.e. sync, persistence, etc.)
- * @param msg The actual log message, or maybe some monosodium glutamate
- * @param data Any additional information that might be useful that is JSON
- *             serializable (e.g. numbers, strings, arrays, dictionaries)
+ *                 from (i.e. sync, persistence, etc.); value cannot be nil
+ * @param msg The actual log message, or maybe some monosodium glutamate;
+ *            value cannot be nil
+ * @param userInfo Any additional information that might be useful that is JSON
+ *                serializable (e.g. numbers, strings, arrays, dictionaries)
  */
 void graylog_log(GraylogLogLevel lvl,
                  NSString* facility,
                  NSString* message,
-                 NSDictionary* data);
+                 NSDictionary* userInfo);
 
 
 #define GRAYLOG_LOG(level, facility, format, ...) {                         \
