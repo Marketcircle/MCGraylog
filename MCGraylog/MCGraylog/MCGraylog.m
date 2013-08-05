@@ -385,24 +385,27 @@ graylog_log(GraylogLogLevel level,
         [NSException raise:NSInvalidArgumentException
                     format:@"Facility: %@; Message: %@", facility, message];
 
-    if (!_graylog_queue) return;
-    
-    dispatch_async(_graylog_queue, ^() {
-        NSData* formatted_message = format_message(level,
-                                                   facility,
-                                                   message,
-                                                   data);
-        if (!formatted_message) return;
+    if (_graylog_queue) {
+        dispatch_async(_graylog_queue, ^() {
+            NSData* formatted_message = format_message(level,
+                                                       facility,
+                                                       message,
+                                                       data);
+            if (!formatted_message) return;
             
-        uint8_t* compressed_message      = NULL;
-        size_t   compressed_message_size = 0;
-        int compress_result = compress_message(formatted_message,
-                                               &compressed_message,
-                                               &compressed_message_size);
-        if (compress_result) return;
+            uint8_t* compressed_message      = NULL;
+            size_t   compressed_message_size = 0;
+            int compress_result = compress_message(formatted_message,
+                                                   &compressed_message,
+                                                   &compressed_message_size);
+            if (compress_result) return;
             
-        send_log(compressed_message, compressed_message_size);
+            send_log(compressed_message, compressed_message_size);
             
-        free(compressed_message); // don't forget!
-    });
+            free(compressed_message); // don't forget!
+        });
+    }
+    else {
+        NSLog(@"Graylog: %@: %@\nuserInfo=%@", facility, message, data);
+    }
 }

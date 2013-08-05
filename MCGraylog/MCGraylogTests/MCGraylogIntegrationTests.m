@@ -295,8 +295,7 @@ static NSPipe* outputPipe;
 }
 
 
-- (void) testLoggingSilentlyIgnoredIfNotInitialized {
-    return;
+- (void) testLoggingGoesThroughNSLogIfNotInitialized {
     graylog_deinit();
     GRAYLOG_ALERT(@"test", @"message");
     WAIT_FOR_NO_RESPONSE;
