@@ -11,6 +11,7 @@
 		2E638C301753E9F6009E98BD /* logstash-1.1.12-flatjar.jar in Resources */ = {isa = PBXBuildFile; fileRef = 2E638C2B1753E76A009E98BD /* logstash-1.1.12-flatjar.jar */; };
 		2E638C321753EA75009E98BD /* logstash.conf in Resources */ = {isa = PBXBuildFile; fileRef = 2E638C311753EA75009E98BD /* logstash.conf */; };
 		2ED8BABC17551CFA00F6F3D6 /* MCGraylog.h in Headers */ = {isa = PBXBuildFile; fileRef = B85586AB1737FDA400945AF3 /* MCGraylog.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		92711D0F17B2A71E004BAE9C /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92711D0E17B2A71E004BAE9C /* CFNetwork.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		AF5B0A71179C8B7A0056C6E8 /* MCGraylogTests.m in Sources */ = {isa = PBXBuildFile; fileRef = AF5B0A70179C8B7A0056C6E8 /* MCGraylogTests.m */; };
 		AF8953AE179CAACC00FECD19 /* logstash-1.1.12-flatjar.jar in Resources */ = {isa = PBXBuildFile; fileRef = 2E638C2B1753E76A009E98BD /* logstash-1.1.12-flatjar.jar */; };
 		AF8F753217A1815800E72561 /* Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = AFC59FD6179D7FC800816DA2 /* Internals.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -38,6 +39,7 @@
 		2E638C2B1753E76A009E98BD /* logstash-1.1.12-flatjar.jar */ = {isa = PBXFileReference; lastKnownFileType = archive.jar; path = "logstash-1.1.12-flatjar.jar"; sourceTree = "<group>"; };
 		2E638C2E1753E78C009E98BD /* MCGraylogIntegrationTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCGraylogIntegrationTests.m; sourceTree = "<group>"; };
 		2E638C311753EA75009E98BD /* logstash.conf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = logstash.conf; sourceTree = "<group>"; };
+		92711D0E17B2A71E004BAE9C /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		AF5B0A70179C8B7A0056C6E8 /* MCGraylogTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCGraylogTests.m; sourceTree = "<group>"; };
 		AFC59FD6179D7FC800816DA2 /* Internals.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Internals.h; path = "MCGraylog/Private Headers/Internals.h"; sourceTree = "<group>"; };
 		B855869B1737FDA400945AF3 /* MCGraylog.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MCGraylog.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -62,6 +64,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				92711D0F17B2A71E004BAE9C /* CFNetwork.framework in Frameworks */,
 				B85586CE1737FE4200945AF3 /* libz.dylib in Frameworks */,
 				B855869F1737FDA400945AF3 /* Cocoa.framework in Frameworks */,
 			);
@@ -101,6 +104,7 @@
 		B85586911737FDA300945AF3 = {
 			isa = PBXGroup;
 			children = (
+				92711D0E17B2A71E004BAE9C /* CFNetwork.framework */,
 				B85586A41737FDA400945AF3 /* MCGraylog */,
 				B85586BA1737FDA400945AF3 /* MCGraylogTests */,
 				B855869D1737FDA400945AF3 /* Frameworks */,
