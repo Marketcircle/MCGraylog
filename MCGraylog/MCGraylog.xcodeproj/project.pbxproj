@@ -233,7 +233,7 @@
 			name = MCGraylogTests;
 			productName = MCGraylogTests;
 			productReference = B85586B31737FDA400945AF3 /* MCGraylogTests.octest */;
-			productType = "com.apple.product-type.bundle";
+			productType = "com.apple.product-type.bundle.ocunit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -241,7 +241,7 @@
 		B85586921737FDA300945AF3 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastTestingUpgradeCheck = 0510;
+				LastTestingUpgradeCheck = 0600;
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = Marketcircle;
 			};
