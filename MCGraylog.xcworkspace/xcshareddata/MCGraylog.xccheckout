@@ -22,7 +22,7 @@
 		<key>4A6C7586C17FD73D6324750AD1A8C758070AE313</key>
 		<string>..</string>
 		<key>C63B49EE22C0FD0E5649D8CE5933D872EEEEBD03</key>
-		<string>../../..</string>
+		<string>../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
 	<string>ssh://github.com/Marketcircle/MCGraylog.git</string>
@@ -38,7 +38,7 @@
 			<key>IDESourceControlWCCIdentifierKey</key>
 			<string>C63B49EE22C0FD0E5649D8CE5933D872EEEEBD03</string>
 			<key>IDESourceControlWCCName</key>
-			<string>..</string>
+			<string></string>
 		</dict>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
