@@ -13,7 +13,6 @@
 		2ED8BABC17551CFA00F6F3D6 /* MCGraylog.h in Headers */ = {isa = PBXBuildFile; fileRef = B85586AB1737FDA400945AF3 /* MCGraylog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		92711D0F17B2A71E004BAE9C /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92711D0E17B2A71E004BAE9C /* CFNetwork.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		AF5B0A71179C8B7A0056C6E8 /* MCGraylogTests.m in Sources */ = {isa = PBXBuildFile; fileRef = AF5B0A70179C8B7A0056C6E8 /* MCGraylogTests.m */; };
-		AF8953AE179CAACC00FECD19 /* logstash-1.1.12-flatjar.jar in Resources */ = {isa = PBXBuildFile; fileRef = 2E638C2B1753E76A009E98BD /* logstash-1.1.12-flatjar.jar */; };
 		AF8F753217A1815800E72561 /* Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = AFC59FD6179D7FC800816DA2 /* Internals.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		B855869F1737FDA400945AF3 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B855869E1737FDA400945AF3 /* Cocoa.framework */; };
 		B85586A91737FDA400945AF3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B85586A71737FDA400945AF3 /* InfoPlist.strings */; };
@@ -268,7 +267,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AF8953AE179CAACC00FECD19 /* logstash-1.1.12-flatjar.jar in Resources */,
 				B85586A91737FDA400945AF3 /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

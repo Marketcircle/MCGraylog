@@ -2,35 +2,49 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
 	<key>IDESourceControlProjectIdentifier</key>
 	<string>6ADD19E9-3E9D-4D67-A752-87958ED52649</string>
 	<key>IDESourceControlProjectName</key>
 	<string>MCGraylog</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>5EDD3A04-308C-47EC-A383-682FDD1611F6</key>
+		<key>4A6C7586C17FD73D6324750AD1A8C758070AE313</key>
 		<string>ssh://github.com/Marketcircle/MCGraylog.git</string>
+		<key>C63B49EE22C0FD0E5649D8CE5933D872EEEEBD03</key>
+		<string>ssh://git.marketcircle.net:7999/sync/sync.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
 	<string>MCGraylog.xcworkspace</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>5EDD3A04-308C-47EC-A383-682FDD1611F6</key>
+		<key>4A6C7586C17FD73D6324750AD1A8C758070AE313</key>
 		<string>..</string>
+		<key>C63B49EE22C0FD0E5649D8CE5933D872EEEEBD03</key>
+		<string>../../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
 	<string>ssh://github.com/Marketcircle/MCGraylog.git</string>
 	<key>IDESourceControlProjectVersion</key>
-	<integer>110</integer>
+	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>5EDD3A04-308C-47EC-A383-682FDD1611F6</string>
+	<string>4A6C7586C17FD73D6324750AD1A8C758070AE313</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>5EDD3A04-308C-47EC-A383-682FDD1611F6</string>
+			<string>C63B49EE22C0FD0E5649D8CE5933D872EEEEBD03</string>
+			<key>IDESourceControlWCCName</key>
+			<string>..</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>4A6C7586C17FD73D6324750AD1A8C758070AE313</string>
 			<key>IDESourceControlWCCName</key>
 			<string>MCGraylog</string>
 		</dict>
