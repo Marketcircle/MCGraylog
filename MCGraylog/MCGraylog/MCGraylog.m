@@ -9,14 +9,14 @@
 #import "MCGraylog.h"
 #import "Private Headers/Internals.h"
 
-#import <Availability.h>
-#import <sys/socket.h>
-#import <netinet/in.h>
-#import <arpa/inet.h>
-#import <zlib.h>
-#import <netdb.h>
-#import <sys/time.h>
+@import Darwin.Availability;
+@import Darwin.POSIX.sys.socket;
+@import Darwin.POSIX.netinet.in;
+@import Darwin.POSIX.arpa.inet;
+@import Darwin.POSIX.netdb;
+@import Darwin.POSIX.sys.time;
 
+#import <zlib.h>
 
 static GraylogLogLevel max_log_level   = GraylogLogLevelDebug;
 static dispatch_queue_t _graylog_queue = NULL;

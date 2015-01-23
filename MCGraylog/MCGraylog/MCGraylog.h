@@ -6,7 +6,7 @@
 //  Copyright (c) 2013 Marketcircle. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+@import Foundation;
 
 
 typedef enum {

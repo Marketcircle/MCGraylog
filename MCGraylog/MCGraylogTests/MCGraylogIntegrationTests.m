@@ -6,8 +6,8 @@
 //  Copyright (c) 2013 Marketcircle. All rights reserved.
 //
 
-#import <SenTestingKit/SenTestingKit.h>
-#import <Availability.h>
+@import XCTest;
+@import Darwin.Availability;
 #import "MCGraylog.h"
 #import "Internals.h"
 
@@ -21,7 +21,7 @@ static NSPipe* outputPipe;
 #define LOGSTASH_TIMEOUT 2.0
 
 
-@interface MCGraylogIntegrationTests : SenTestCase
+@interface MCGraylogIntegrationTests : XCTestCase
 @property (nonatomic) NSMutableData* logstash_output;
 @property (nonatomic) dispatch_semaphore_t output_semaphore;
 @end
@@ -29,21 +29,20 @@ static NSPipe* outputPipe;
 
 @implementation MCGraylogIntegrationTests
 
+@synthesize logstash_output;
+@synthesize output_semaphore;
 
 + (void)setUp {
     logstash   = [[NSTask alloc] init];
     inputPipe  = [[NSPipe alloc] init];
     outputPipe = [[NSPipe alloc] init];
     
-    NSBundle* bundle = [NSBundle bundleForClass:[self class]];
+    [logstash setLaunchPath:@"/usr/local/bin/logstash"];
 
-    [logstash setLaunchPath:@"/usr/bin/java"];
-    
-    NSString * jarPath = [bundle pathForResource:@"logstash-1.1.12-flatjar"
-                                          ofType:@"jar"];
-    NSString * configFile = [bundle pathForResource:@"logstash"
-                                             ofType:@"conf"];
-    [logstash setArguments:@[@"-jar", jarPath, @"agent", @"-f", configFile]];
+    NSBundle* bundle     = [NSBundle bundleForClass:[self class]];
+    NSString* configFile = [bundle pathForResource:@"logstash"
+                                            ofType:@"conf"];
+    [logstash setArguments:@[@"-f", configFile]];
     logstash.standardInput  = inputPipe;
     logstash.standardOutput = outputPipe;
     [logstash launch];
@@ -67,7 +66,7 @@ static NSPipe* outputPipe;
     
     int result = graylog_init([NSURL URLWithString:@"http://localhost/"],
                               GraylogLogLevelDebug);
-    STAssertEquals(0, result, @"Failed to initialize graylog correctly");
+    XCTAssertEqual(0, result, @"Failed to initialize graylog correctly");
     
     self.logstash_output  = [[NSMutableData alloc] init];
     self.output_semaphore = dispatch_semaphore_create(0);
@@ -86,21 +85,26 @@ static NSPipe* outputPipe;
 }
 
 
-- (void) dealloc {
+- (void)dealloc {
     DISPATCH_RELEASE(self.output_semaphore);
 }
 
 
-- (NSDictionary*) parseResponse:(NSData*)data {
+- (NSDictionary*)parseResponse:(NSData*)data {
 
-    NSError*   parse_error = nil;
+    NSError* parse_error = nil;
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wassign-enum"
     NSDictionary* response = [NSJSONSerialization JSONObjectWithData:data
                                                              options:0
                                                                error:&parse_error];
-    STAssertNotNil(response,
-                   @"Failed to parse logstash response: %@. Error: %@",
-                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding],
-                   parse_error);
+#pragma clang diagnostic pop
+
+    XCTAssertNotNil(response,
+                    @"Failed to parse logstash response: %@. Error: %@",
+                    [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding],
+                    parse_error);
     
     return response;
 }
@@ -144,10 +148,10 @@ static NSPipe* outputPipe;
     graylog_log(GraylogLogLevelInformational, @"test", @"message", @{});
     WAIT_FOR_RESPONSE;
     
-    STAssertEqualObjects(response[@"@fields"][@"short_message"], @"message",
-                         @"Short message should be test");
-    STAssertEqualObjects(response[@"@fields"][@"facility"], @"test",
-                         @"Short message should be test");
+    XCTAssertEqualObjects(response[@"@fields"][@"short_message"], @"message",
+                          @"Short message should be test");
+    XCTAssertEqualObjects(response[@"@fields"][@"facility"], @"test",
+                          @"Short message should be test");
 }
 
 
@@ -172,9 +176,9 @@ static NSPipe* outputPipe;
                      [NSString stringWithFormat:@"%ld", [obj longValue]],
                      nil);
          WAIT_FOR_RESPONSE;
-         STAssertEqualObjects(response[@"@fields"][@"level"],
-                              obj,
-                              @"Wrong log level in response: %@", response);
+         XCTAssertEqualObjects(response[@"@fields"][@"level"],
+                               obj,
+                               @"Wrong log level in response: %@", response);
          
          self.logstash_output = [[NSMutableData alloc] init]; // reset
      }];
@@ -189,7 +193,10 @@ static NSPipe* outputPipe;
                   @"custom_field": @"hello"
                   });
     WAIT_FOR_RESPONSE;
-    STAssertEqualObjects(response[@"@fields"][@"_custom_field"], @"hello", nil);
+
+    id lhs = response[@"@fields"][@"_custom_field"];
+    id rhs = @"hello";
+    XCTAssertEqualObjects(lhs, rhs);
 }
 
 
@@ -201,7 +208,7 @@ static NSPipe* outputPipe;
                   @"custom_field": @5
                   });
     WAIT_FOR_RESPONSE;
-    STAssertEqualObjects(response[@"@fields"][@"_custom_field"], @5, nil);
+    XCTAssertEqualObjects(response[@"@fields"][@"_custom_field"], @5);
 }
 
 
@@ -211,27 +218,27 @@ static NSPipe* outputPipe;
                 @"message",
                 @{ @"id": @"hello" });
     WAIT_FOR_RESPONSE;
-    STAssertNil(response[@"@fields"][@"_id"], @"hello", nil);
-    STAssertEqualObjects(response[@"@fields"][@"_userInfo_id"], @"hello", nil);
+    XCTAssertNil(response[@"@fields"][@"_id"], @"hello", nil);
+    XCTAssertEqualObjects(response[@"@fields"][@"_userInfo_id"], @"hello");
 }
 
 
 - (void) testManyConcurrentLogs {
-    STFail(@"Finish implementing me!");
+    XCTFail(@"Finish implementing me!");
     return;
 
-    dispatch_queue_t q = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH,
-                                                   0);
-    dispatch_apply(9000, q, ^(size_t index) {
-        GRAYLOG_ALERT(@"test", @"%zd", index);
-    });
-    
-    // some sort of assertion goes here...
+//  dispatch_queue_t q = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH,
+//                                                 0);
+//  dispatch_apply(9000, q, ^(size_t index) {
+//      GRAYLOG_ALERT(@"test", @"%zd", index);
+//  });
+//
+//  // some sort of assertion goes here...
 }
 
 
 - (void) testMessageChunking {
-    STFail(@"Finish implementing me!");
+    XCTFail(@"Finish implementing me!");
     return;
     
     NSString* string = @"http://www.youtube.com/watch?v=HNTxr2NJHa0 ";
@@ -240,8 +247,8 @@ static NSPipe* outputPipe;
     
     GRAYLOG_NOTICE(@"test", @"%@", string);
     WAIT_FOR_RESPONSE;
-    STAssertEqualObjects(response[@"@fields"][@"short_message"], string,
-                         @"Message was corrupt?");
+    XCTAssertEqualObjects(response[@"@fields"][@"short_message"], string,
+                          @"Message was corrupt?");
 }
 
 
@@ -249,8 +256,8 @@ static NSPipe* outputPipe;
     graylog_set_log_level(GraylogLogLevelEmergency);
     GRAYLOG_DEBUG(@"test", @"herp derp");
     WAIT_FOR_NO_RESPONSE; // wait a reasonable amount of time for the response
-    STAssertNil(response,
-                @"Something was still logged to graylog: %@", response);
+    XCTAssertNil(response,
+                 @"Something was still logged to graylog: %@", response);
 }
 
 
@@ -266,32 +273,32 @@ static NSPipe* outputPipe;
     NSString* actual = response[@"@short_message"];
     NSRange   range  = [actual rangeOfString:@"Failed to serialize message"];
 
-    STAssertTrue(range.location != NSNotFound,
-                 @"Expected serialization failure message, got: %@", response);
+    XCTAssertTrue(range.location != NSNotFound,
+                  @"Expected serialization failure message, got: %@", response);
 }
 
 
 - (void) testLoggingEmptyString {
     GRAYLOG_ALERT(@"test", @"");
     WAIT_FOR_RESPONSE;
-    STAssertEqualObjects(response[@"@fields"][@"short_message"], @"",
-                         [response description]);
+    id lhs = response[@"@fields"][@"short_message"];
+    XCTAssertEqualObjects(lhs, @"", @"%@", [response description]);
 }
 
 
 - (void) testLoggingEmptyFacility {
     GRAYLOG_ALERT(@"", @"message");
     WAIT_FOR_RESPONSE;
-    STAssertEqualObjects(response[@"@fields"][@"facility"], @"",
-                         [response description]);
+    XCTAssertEqualObjects(response[@"@fields"][@"facility"], @"",
+                          @"%@", [response description]);
 }
 
 
 - (void) testFacilityAndMessageMustNotBeNil {
-    STAssertThrows(graylog_log(GraylogLogLevelError, nil, @"message", nil),
-                   @"graylog_log should throw when given nil facility");
-    STAssertThrows(graylog_log(GraylogLogLevelError, @"test", nil, nil),
-                   @"graylog_log should throw when given nil message");
+    XCTAssertThrows(graylog_log(GraylogLogLevelError, nil, @"message", nil),
+                    @"graylog_log should throw when given nil facility");
+    XCTAssertThrows(graylog_log(GraylogLogLevelError, @"test", nil, nil),
+                    @"graylog_log should throw when given nil message");
 }
 
 
@@ -299,7 +306,7 @@ static NSPipe* outputPipe;
     graylog_deinit();
     GRAYLOG_ALERT(@"test", @"message");
     WAIT_FOR_NO_RESPONSE;
-    STAssertNil(response, @"Got a message before init");
+    XCTAssertNil(response, @"Got a message before init");
 }
 
 @end

@@ -9,20 +9,19 @@
 /* Begin PBXBuildFile section */
 		2ED8BABC17551CFA00F6F3D6 /* MCGraylog.h in Headers */ = {isa = PBXBuildFile; fileRef = B85586AB1737FDA400945AF3 /* MCGraylog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		92711D0F17B2A71E004BAE9C /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92711D0E17B2A71E004BAE9C /* CFNetwork.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		AF5B0A71179C8B7A0056C6E8 /* MCGraylogTests.m in Sources */ = {isa = PBXBuildFile; fileRef = AF5B0A70179C8B7A0056C6E8 /* MCGraylogTests.m */; };
 		AF8F753217A1815800E72561 /* Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = AFC59FD6179D7FC800816DA2 /* Internals.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		B855869F1737FDA400945AF3 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B855869E1737FDA400945AF3 /* Cocoa.framework */; };
+		AFE428BB1A71E3140016818E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B85586A31737FDA400945AF3 /* Foundation.framework */; };
+		AFE428C71A71E34A0016818E /* MCGraylog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B855869B1737FDA400945AF3 /* MCGraylog.framework */; };
+		AFE428CD1A71E3910016818E /* MCGraylogIntegrationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2E638C2E1753E78C009E98BD /* MCGraylogIntegrationTests.m */; };
+		AFE428CE1A71E3910016818E /* MCGraylogTests.m in Sources */ = {isa = PBXBuildFile; fileRef = AF5B0A70179C8B7A0056C6E8 /* MCGraylogTests.m */; };
+		AFE428D01A71EC5A0016818E /* logstash.conf in Resources */ = {isa = PBXBuildFile; fileRef = AFE428CF1A71EC5A0016818E /* logstash.conf */; };
 		B85586A91737FDA400945AF3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B85586A71737FDA400945AF3 /* InfoPlist.strings */; };
 		B85586AD1737FDA400945AF3 /* MCGraylog.m in Sources */ = {isa = PBXBuildFile; fileRef = B85586AC1737FDA400945AF3 /* MCGraylog.m */; };
-		B85586B51737FDA400945AF3 /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B85586B41737FDA400945AF3 /* SenTestingKit.framework */; };
-		B85586B61737FDA400945AF3 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B855869E1737FDA400945AF3 /* Cocoa.framework */; };
-		B85586B91737FDA400945AF3 /* MCGraylog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B855869B1737FDA400945AF3 /* MCGraylog.framework */; };
-		B85586BF1737FDA400945AF3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B85586BD1737FDA400945AF3 /* InfoPlist.strings */; };
 		B85586CE1737FE4200945AF3 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B85586CD1737FE4200945AF3 /* libz.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		B85586B71737FDA400945AF3 /* PBXContainerItemProxy */ = {
+		AFE428C81A71E34A0016818E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = B85586921737FDA300945AF3 /* Project object */;
 			proxyType = 1;
@@ -32,58 +31,45 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		2E638C2E1753E78C009E98BD /* MCGraylogIntegrationTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCGraylogIntegrationTests.m; sourceTree = "<group>"; };
+		2E638C2E1753E78C009E98BD /* MCGraylogIntegrationTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MCGraylogIntegrationTests.m; path = ../MCGraylogTests/MCGraylogIntegrationTests.m; sourceTree = "<group>"; };
 		92711D0E17B2A71E004BAE9C /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
-		AF5B0A70179C8B7A0056C6E8 /* MCGraylogTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCGraylogTests.m; sourceTree = "<group>"; };
+		AF5B0A70179C8B7A0056C6E8 /* MCGraylogTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MCGraylogTests.m; path = ../MCGraylogTests/MCGraylogTests.m; sourceTree = "<group>"; };
 		AFC59FD6179D7FC800816DA2 /* Internals.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Internals.h; path = "MCGraylog/Private Headers/Internals.h"; sourceTree = "<group>"; };
+		AFE428C11A71E34A0016818E /* MCGraylog Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "MCGraylog Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AFE428C41A71E34A0016818E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AFE428CF1A71EC5A0016818E /* logstash.conf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = logstash.conf; sourceTree = "<group>"; };
 		B855869B1737FDA400945AF3 /* MCGraylog.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MCGraylog.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		B855869E1737FDA400945AF3 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
-		B85586A11737FDA400945AF3 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
-		B85586A21737FDA400945AF3 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		B85586A31737FDA400945AF3 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		B85586A61737FDA400945AF3 /* MCGraylog-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "MCGraylog-Info.plist"; sourceTree = "<group>"; };
 		B85586A81737FDA400945AF3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		B85586AA1737FDA400945AF3 /* MCGraylog-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MCGraylog-Prefix.pch"; sourceTree = "<group>"; };
 		B85586AB1737FDA400945AF3 /* MCGraylog.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MCGraylog.h; sourceTree = "<group>"; };
 		B85586AC1737FDA400945AF3 /* MCGraylog.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MCGraylog.m; sourceTree = "<group>"; };
-		B85586B31737FDA400945AF3 /* MCGraylogTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MCGraylogTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
-		B85586B41737FDA400945AF3 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
-		B85586BC1737FDA400945AF3 /* MCGraylogTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "MCGraylogTests-Info.plist"; sourceTree = "<group>"; };
-		B85586BE1737FDA400945AF3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		B85586CD1737FE4200945AF3 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		AFE428BE1A71E34A0016818E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AFE428C71A71E34A0016818E /* MCGraylog.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B85586971737FDA400945AF3 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AFE428BB1A71E3140016818E /* Foundation.framework in Frameworks */,
 				92711D0F17B2A71E004BAE9C /* CFNetwork.framework in Frameworks */,
 				B85586CE1737FE4200945AF3 /* libz.dylib in Frameworks */,
-				B855869F1737FDA400945AF3 /* Cocoa.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		B85586AF1737FDA400945AF3 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				B85586B51737FDA400945AF3 /* SenTestingKit.framework in Frameworks */,
-				B85586B61737FDA400945AF3 /* Cocoa.framework in Frameworks */,
-				B85586B91737FDA400945AF3 /* MCGraylog.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		2E638C2A1753E753009E98BD /* Logstash */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Logstash;
-			sourceTree = "<group>";
-		};
 		AFC59FD7179D7FF400816DA2 /* Private Headers */ = {
 			isa = PBXGroup;
 			children = (
@@ -93,11 +79,30 @@
 			path = ..;
 			sourceTree = "<group>";
 		};
+		AFE428C21A71E34A0016818E /* MCGraylog Tests */ = {
+			isa = PBXGroup;
+			children = (
+				2E638C2E1753E78C009E98BD /* MCGraylogIntegrationTests.m */,
+				AF5B0A70179C8B7A0056C6E8 /* MCGraylogTests.m */,
+				AFE428C31A71E34A0016818E /* Supporting Files */,
+			);
+			path = "MCGraylog Tests";
+			sourceTree = "<group>";
+		};
+		AFE428C31A71E34A0016818E /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				AFE428CF1A71EC5A0016818E /* logstash.conf */,
+				AFE428C41A71E34A0016818E /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
 		B85586911737FDA300945AF3 = {
 			isa = PBXGroup;
 			children = (
 				B85586A41737FDA400945AF3 /* MCGraylog */,
-				B85586BA1737FDA400945AF3 /* MCGraylogTests */,
+				AFE428C21A71E34A0016818E /* MCGraylog Tests */,
 				B855869D1737FDA400945AF3 /* Frameworks */,
 				B855869C1737FDA400945AF3 /* Products */,
 			);
@@ -107,7 +112,7 @@
 			isa = PBXGroup;
 			children = (
 				B855869B1737FDA400945AF3 /* MCGraylog.framework */,
-				B85586B31737FDA400945AF3 /* MCGraylogTests.octest */,
+				AFE428C11A71E34A0016818E /* MCGraylog Tests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -117,21 +122,9 @@
 			children = (
 				92711D0E17B2A71E004BAE9C /* CFNetwork.framework */,
 				B85586CD1737FE4200945AF3 /* libz.dylib */,
-				B855869E1737FDA400945AF3 /* Cocoa.framework */,
-				B85586B41737FDA400945AF3 /* SenTestingKit.framework */,
-				B85586A01737FDA400945AF3 /* Other Frameworks */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		B85586A01737FDA400945AF3 /* Other Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				B85586A11737FDA400945AF3 /* AppKit.framework */,
-				B85586A21737FDA400945AF3 /* CoreData.framework */,
 				B85586A31737FDA400945AF3 /* Foundation.framework */,
 			);
-			name = "Other Frameworks";
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		B85586A41737FDA400945AF3 /* MCGraylog */ = {
@@ -155,26 +148,6 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		B85586BA1737FDA400945AF3 /* MCGraylogTests */ = {
-			isa = PBXGroup;
-			children = (
-				2E638C2A1753E753009E98BD /* Logstash */,
-				2E638C2E1753E78C009E98BD /* MCGraylogIntegrationTests.m */,
-				AF5B0A70179C8B7A0056C6E8 /* MCGraylogTests.m */,
-				B85586BB1737FDA400945AF3 /* Supporting Files */,
-			);
-			path = MCGraylogTests;
-			sourceTree = "<group>";
-		};
-		B85586BB1737FDA400945AF3 /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
-				B85586BC1737FDA400945AF3 /* MCGraylogTests-Info.plist */,
-				B85586BD1737FDA400945AF3 /* InfoPlist.strings */,
-			);
-			name = "Supporting Files";
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -190,6 +163,24 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		AFE428C01A71E34A0016818E /* MCGraylog Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AFE428CA1A71E34A0016818E /* Build configuration list for PBXNativeTarget "MCGraylog Tests" */;
+			buildPhases = (
+				AFE428BD1A71E34A0016818E /* Sources */,
+				AFE428BE1A71E34A0016818E /* Frameworks */,
+				AFE428BF1A71E34A0016818E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AFE428C91A71E34A0016818E /* PBXTargetDependency */,
+			);
+			name = "MCGraylog Tests";
+			productName = "MCGraylog Tests";
+			productReference = AFE428C11A71E34A0016818E /* MCGraylog Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		B855869A1737FDA400945AF3 /* MCGraylog */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = B85586C51737FDA400945AF3 /* Build configuration list for PBXNativeTarget "MCGraylog" */;
@@ -208,25 +199,6 @@
 			productReference = B855869B1737FDA400945AF3 /* MCGraylog.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		B85586B21737FDA400945AF3 /* MCGraylogTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = B85586C81737FDA400945AF3 /* Build configuration list for PBXNativeTarget "MCGraylogTests" */;
-			buildPhases = (
-				B85586AE1737FDA400945AF3 /* Sources */,
-				B85586AF1737FDA400945AF3 /* Frameworks */,
-				B85586B01737FDA400945AF3 /* Resources */,
-				B85586B11737FDA400945AF3 /* ShellScript */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				B85586B81737FDA400945AF3 /* PBXTargetDependency */,
-			);
-			name = MCGraylogTests;
-			productName = MCGraylogTests;
-			productReference = B85586B31737FDA400945AF3 /* MCGraylogTests.octest */;
-			productType = "com.apple.product-type.bundle.ocunit-test";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -236,6 +208,11 @@
 				LastTestingUpgradeCheck = 0620;
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = Marketcircle;
+				TargetAttributes = {
+					AFE428C01A71E34A0016818E = {
+						CreatedOnToolsVersion = 6.2;
+					};
+				};
 			};
 			buildConfigurationList = B85586951737FDA300945AF3 /* Build configuration list for PBXProject "MCGraylog" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -250,12 +227,20 @@
 			projectRoot = "";
 			targets = (
 				B855869A1737FDA400945AF3 /* MCGraylog */,
-				B85586B21737FDA400945AF3 /* MCGraylogTests */,
+				AFE428C01A71E34A0016818E /* MCGraylog Tests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		AFE428BF1A71E34A0016818E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AFE428D01A71EC5A0016818E /* logstash.conf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B85586991737FDA400945AF3 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -264,33 +249,18 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		B85586B01737FDA400945AF3 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				B85586BF1737FDA400945AF3 /* InfoPlist.strings in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXResourcesBuildPhase section */
 
-/* Begin PBXShellScriptBuildPhase section */
-		B85586B11737FDA400945AF3 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
+/* Begin PBXSourcesBuildPhase section */
+		AFE428BD1A71E34A0016818E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
+				AFE428CD1A71E3910016818E /* MCGraylogIntegrationTests.m in Sources */,
+				AFE428CE1A71E3910016818E /* MCGraylogTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
 		};
-/* End PBXShellScriptBuildPhase section */
-
-/* Begin PBXSourcesBuildPhase section */
 		B85586961737FDA400945AF3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -299,21 +269,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		B85586AE1737FDA400945AF3 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				AF5B0A71179C8B7A0056C6E8 /* MCGraylogTests.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		B85586B81737FDA400945AF3 /* PBXTargetDependency */ = {
+		AFE428C91A71E34A0016818E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = B855869A1737FDA400945AF3 /* MCGraylog */;
-			targetProxy = B85586B71737FDA400945AF3 /* PBXContainerItemProxy */;
+			targetProxy = AFE428C81A71E34A0016818E /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -326,17 +288,67 @@
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
 		};
-		B85586BD1737FDA400945AF3 /* InfoPlist.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				B85586BE1737FDA400945AF3 /* en */,
-			);
-			name = InfoPlist.strings;
-			sourceTree = "<group>";
-		};
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		AFE428CB1A71E34A0016818E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+					"$(inherited)",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				INFOPLIST_FILE = "MCGraylog Tests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		AFE428CC1A71E34A0016818E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+					"$(inherited)",
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				INFOPLIST_FILE = "MCGraylog Tests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		B85586C31737FDA400945AF3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -366,10 +378,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
-				WARNING_CFLAGS = (
-					"-Weverything",
-					"-Wno-gnu",
-				);
+				WARNING_CFLAGS = "";
 			};
 			name = Debug;
 		};
@@ -395,16 +404,14 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				SDKROOT = macosx;
-				WARNING_CFLAGS = (
-					"-Weverything",
-					"-Wno-gnu",
-				);
+				WARNING_CFLAGS = "";
 			};
 			name = Release;
 		};
 		B85586C61737FDA400945AF3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -415,6 +422,10 @@
 				INFOPLIST_FILE = "MCGraylog/MCGraylog-Info.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = (
+					"-Weverything",
+					"-Wno-gnu",
+				);
 				WRAPPER_EXTENSION = framework;
 			};
 			name = Debug;
@@ -422,6 +433,7 @@
 		B85586C71737FDA400945AF3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -432,39 +444,25 @@
 				INFOPLIST_FILE = "MCGraylog/MCGraylog-Info.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = (
+					"-Weverything",
+					"-Wno-gnu",
+				);
 				WRAPPER_EXTENSION = framework;
-			};
-			name = Release;
-		};
-		B85586C91737FDA400945AF3 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				FRAMEWORK_SEARCH_PATHS = "\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"";
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "MCGraylog/MCGraylog-Prefix.pch";
-				INFOPLIST_FILE = "MCGraylogTests/MCGraylogTests-Info.plist";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				WRAPPER_EXTENSION = octest;
-			};
-			name = Debug;
-		};
-		B85586CA1737FDA400945AF3 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				FRAMEWORK_SEARCH_PATHS = "\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"";
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "MCGraylog/MCGraylog-Prefix.pch";
-				INFOPLIST_FILE = "MCGraylogTests/MCGraylogTests-Info.plist";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				WRAPPER_EXTENSION = octest;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		AFE428CA1A71E34A0016818E /* Build configuration list for PBXNativeTarget "MCGraylog Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AFE428CB1A71E34A0016818E /* Debug */,
+				AFE428CC1A71E34A0016818E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
 		B85586951737FDA300945AF3 /* Build configuration list for PBXProject "MCGraylog" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -479,15 +477,6 @@
 			buildConfigurations = (
 				B85586C61737FDA400945AF3 /* Debug */,
 				B85586C71737FDA400945AF3 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		B85586C81737FDA400945AF3 /* Build configuration list for PBXNativeTarget "MCGraylogTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				B85586C91737FDA400945AF3 /* Debug */,
-				B85586CA1737FDA400945AF3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

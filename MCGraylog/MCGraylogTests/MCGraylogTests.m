@@ -6,11 +6,11 @@
 //  Copyright (c) 2013 Marketcircle. All rights reserved.
 //
 
-#import <SenTestingKit/SenTestingKit.h>
+@import XCTest;
 #import "MCGraylog.h"
 
 
-@interface MCGraylogTests : SenTestCase
+@interface MCGraylogTests : XCTestCase
 @end
 
 
@@ -34,34 +34,34 @@
 #pragma mark Tests
 
 - (void) testDefaultLogLevelIsDebug { // which is the highest level
-    STAssertEquals(GraylogLogLevelDebug, graylog_log_level(),
+    XCTAssertEqual(GraylogLogLevelDebug, graylog_log_level(),
                    @"Default log level is too low");
 }
 
 
 - (void) testCanSetLogLevel {
     graylog_set_log_level(GraylogLogLevelAlert);
-    STAssertEquals(GraylogLogLevelAlert, graylog_log_level(), nil);
+    XCTAssertEqual(GraylogLogLevelAlert, graylog_log_level());
     
     graylog_set_log_level(GraylogLogLevelInfo);
-    STAssertEquals(GraylogLogLevelInfo, graylog_log_level(), nil);
+    XCTAssertEqual(GraylogLogLevelInfo, graylog_log_level());
 
     graylog_set_log_level(GraylogLogLevelCritical);
-    STAssertEquals(GraylogLogLevelCritical, graylog_log_level(), nil);
+    XCTAssertEqual(GraylogLogLevelCritical, graylog_log_level());
 }
 
 
 - (void) testInitSetsLevel {
     graylog_init([NSURL URLWithString:@"http://localhost:12201/"],
                  GraylogLogLevelInfo);
-    STAssertEquals(GraylogLogLevelInfo, graylog_log_level(), nil);
+    XCTAssertEqual(GraylogLogLevelInfo, graylog_log_level());
 }
 
 
 - (void) testInitFailureReturnsNonZero {
     int result = graylog_init([NSURL URLWithString:@"cannot-resolve.com:22"],
                               GraylogLogLevelDebug);
-    STAssertTrue(result != 0, @"graylog_init did not fail!");
+    XCTAssertTrue(result != 0, @"graylog_init did not fail!");
 }
 
 
@@ -69,7 +69,7 @@
     int result = graylog_init([NSURL URLWithString:@"http://localhost/"],
                               GraylogLogLevelAlert);
     // a bit fragile, since we might fail for another reason
-    STAssertTrue(result == 0, @"Setup failed when given no port");
+    XCTAssertTrue(result == 0, @"Setup failed when given no port");
 }
 
 
@@ -82,7 +82,7 @@
 - (void) testUnreachableHostFailsGracefully {
     NSURL* unresolvable = [NSURL URLWithString:@"graylog://oetuhoenutheo.com/"];
     int result = graylog_init(unresolvable, GraylogLogLevelAlert);
-    STAssertEquals(-1, result, @"Managed to resolve the unresolvable");
+    XCTAssertEqual(-1, result, @"Managed to resolve the unresolvable");
 }
 
 @end
