@@ -25,7 +25,7 @@ static const uLong max_chunk_size      = 65507;
 static const Byte  chunked[2]          = {0x1e, 0x0f};
 
 
-NSString* const MCGraylogLogFacility = @"mcgraylog";
+static NSString* const MCGraylogLogFacility = @"mcgraylog";
 #define GRAYLOG_DEFAULT_PORT 12201
 #define CHUNKED_SIZE 2
 #define P1 7
@@ -96,16 +96,21 @@ graylog_init_socket(NSURL* graylog_url)
         // make a copy that we can futz with
         CFDataRef address_info = CFDataCreateCopy(kCFAllocatorDefault, address);
         int pf_version = PF_INET6;
-        
+
+// This warning is safe to ignore in this case because the CFData objects
+// actually contain the structs which the pointers are being cast to, so there
+// will be no alignment related exceptions at runtime
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcast-align"
         if (CFDataGetLength(address) == sizeof(struct sockaddr_in6)) {
             struct sockaddr_in6* addr =
-            (struct sockaddr_in6*)CFDataGetBytePtr(address_info);
+                (struct sockaddr_in6*)CFDataGetBytePtr(address_info);
             addr->sin6_port = htons(port);
             pf_version = PF_INET6;
         }
         else if (CFDataGetLength(address) == sizeof(struct sockaddr_in)) {
             struct sockaddr_in* addr =
-            (struct sockaddr_in*)CFDataGetBytePtr(address_info);
+                (struct sockaddr_in*)CFDataGetBytePtr(address_info);
             addr->sin_port = htons(port);
             pf_version = PF_INET;
         }
@@ -115,6 +120,7 @@ graylog_init_socket(NSURL* graylog_url)
                         format:@"Got an address of weird length: %@",
                                (__bridge NSData*)address];
         }
+#pragma clang diagnostic pop
         
         graylog_socket = CFSocketCreate(kCFAllocatorDefault,
                                         pf_version,
@@ -144,13 +150,12 @@ graylog_init_socket(NSURL* graylog_url)
                 if (i == (addresses_count - 1))
                     NSLog(@"Failed to connect to all addresses of %@",
                           graylog_url);
-                CFRelease(socket);
+                CFRelease(graylog_socket);
                 CFRelease(address_info);
                 continue;
                 
             case kCFSocketTimeout:
-            default:
-                CFRelease(socket);
+                CFRelease(graylog_socket);
                 CFRelease(address_info);
                 CFRelease(host);
                 [NSException raise:NSInternalInconsistencyException
@@ -258,9 +263,12 @@ format_message(GraylogLogLevel lvl,
     NSError* error = nil;
     NSData*   data = nil;
     @try {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wassign-enum"
         data = [NSJSONSerialization dataWithJSONObject:dict
                                                options:0
                                                  error:&error];
+#pragma clang diagnostic pop
     }
     @catch (NSException* exception) {
         GRAYLOG_ERROR(MCGraylogLogFacility,
@@ -332,7 +340,7 @@ send_log(uint8_t* message, size_t message_size)
         chunk_count++;
 
     size_t remain = message_size;
-    for (int i = 0; i < chunk_count; i++) {
+    for (uLong i = 0; i < chunk_count; i++) {
         size_t bytes_to_copy = MIN(remain, max_chunk_size);
         remain -= bytes_to_copy;
 
