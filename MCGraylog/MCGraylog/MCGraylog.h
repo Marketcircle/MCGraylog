@@ -9,7 +9,7 @@
 @import Foundation;
 
 
-typedef enum {
+typedef NS_ENUM(NSUInteger, GraylogLogLevel) {
     GraylogLogLevelUnknown       = 0,
     GraylogLogLevelFatal         = 0,
     GraylogLogLevelEmergency     = 0,
@@ -22,7 +22,7 @@ typedef enum {
     GraylogLogLevelInformational = 6,
     GraylogLogLevelInfo          = 6,
     GraylogLogLevelDebug         = 7
-} GraylogLogLevel;
+};
 
 
 #pragma mark Init/Deinit
