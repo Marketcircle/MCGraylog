@@ -18,16 +18,16 @@
 
 #import <zlib.h>
 
-static GraylogLogLevel max_log_level   = GraylogLogLevelDebug;
-static dispatch_queue_t _graylog_queue = NULL;
-static CFSocketRef graylog_socket      = NULL;
-static const uLong max_chunk_size      = 65507;
-static const Byte  chunked[2]          = {0x1e, 0x0f};
-
+static GraylogLogLevel max_log_level       = GraylogLogLevelDebug;
+static dispatch_queue_t _graylog_queue     = NULL;
+static CFSocketRef graylog_socket          = NULL;
+static const uLong max_chunk_size          = 65507;
+static const Byte  chunked[2]              = {0x1e, 0x0f};
+static const uint16_t graylog_default_port = 12201;
+static const int chunked_size              = 2;
 
 static NSString* const MCGraylogLogFacility = @"mcgraylog";
-#define GRAYLOG_DEFAULT_PORT 12201
-#define CHUNKED_SIZE 2
+
 #define P1 7
 #define P2 31
 
@@ -46,7 +46,7 @@ typedef struct {
 
 static
 int
-graylog_init_socket(NSURL* graylog_url)
+graylog_init_socket(NSURL* const graylog_url)
 {
     // get the host name string
     if (!graylog_url.host) {
@@ -57,13 +57,13 @@ graylog_init_socket(NSURL* graylog_url)
     // get the port number
     int port = graylog_url.port.intValue;
     if (!port)
-        port = GRAYLOG_DEFAULT_PORT;
+        port = graylog_default_port;
     
     // need to cast the host to a CFStringRef for the next part
-    CFStringRef hostname = (__bridge CFStringRef)(graylog_url.host);
+    CFStringRef const hostname = (__bridge CFStringRef)(graylog_url.host);
     
     // try to resolve the hostname
-    CFHostRef host = CFHostCreateWithName(kCFAllocatorDefault, hostname);
+    CFHostRef const host = CFHostCreateWithName(kCFAllocatorDefault, hostname);
     
     if (!host) {
         NSLog(@"Could not allocate CFHost to lookup IP address of graylog");
@@ -79,7 +79,7 @@ graylog_init_socket(NSURL* graylog_url)
     }
     
     Boolean has_been_resolved = false;
-    CFArrayRef addresses = CFHostGetAddressing(host, &has_been_resolved);
+    CFArrayRef const addresses = CFHostGetAddressing(host, &has_been_resolved);
     if (!has_been_resolved) {
         NSLog(@"Failed to get addresses for %@", graylog_url);
         CFRelease(host);
@@ -87,11 +87,12 @@ graylog_init_socket(NSURL* graylog_url)
     }
     
 
-    size_t addresses_count = CFArrayGetCount(addresses);
+    const size_t addresses_count = CFArrayGetCount(addresses);
     
     for (size_t i = 0; i < addresses_count; i++) {
         
-        CFDataRef address = (CFDataRef)CFArrayGetValueAtIndex(addresses, i);
+        CFDataRef const address =
+            (CFDataRef)CFArrayGetValueAtIndex(addresses, i);
         
         // make a copy that we can futz with
         CFDataRef address_info = CFDataCreateCopy(kCFAllocatorDefault, address);
@@ -171,7 +172,7 @@ graylog_init_socket(NSURL* graylog_url)
 
 
 int
-graylog_init(NSURL* graylog_url, GraylogLogLevel init_level)
+graylog_init(NSURL* const graylog_url, const GraylogLogLevel init_level)
 {
     // must create our own concurrent queue radar://14611706
     _graylog_queue = dispatch_queue_create("com.marketcircle.graylog",
@@ -221,7 +222,7 @@ graylog_log_level()
 
 
 void
-graylog_set_log_level(GraylogLogLevel new_level)
+graylog_set_log_level(const GraylogLogLevel new_level)
 {
     max_log_level = new_level;
 }
@@ -238,10 +239,10 @@ graylog_queue()
 
 static
 NSData*
-format_message(GraylogLogLevel lvl,
-               NSString* facility,
-               NSString* message,
-               NSDictionary* xtra_data)
+format_message(const GraylogLogLevel lvl,
+               NSString* const facility,
+               NSString* const message,
+               NSDictionary* const xtra_data)
 {
     NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithCapacity:8];
 
@@ -252,12 +253,13 @@ format_message(GraylogLogLevel lvl,
     dict[@"level"]         = @(lvl);
     dict[@"short_message"] = message;
     
-    [xtra_data enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL* stop) {
-        if ([key isEqual: @"id"])
-            dict[@"_userInfo_id"] = obj;
-        else
-            dict[[NSString stringWithFormat:@"_%@", key]] = obj;
-    }];
+    [xtra_data enumerateKeysAndObjectsUsingBlock:
+        ^(const id key, const id obj, BOOL* const stop) {
+            if ([key isEqual: @"id"])
+                dict[@"_userInfo_id"] = obj;
+            else
+                dict[[NSString stringWithFormat:@"_%@", key]] = obj;
+        }];
     
 
     NSError* error = nil;
@@ -289,18 +291,18 @@ format_message(GraylogLogLevel lvl,
 
 static
 int
-compress_message(NSData* message,
-                 uint8_t** deflated_message,
-                 size_t* deflated_message_size)
+compress_message(NSData* const message,
+                 uint8_t** const deflated_message,
+                 size_t* const deflated_message_size)
 {
     // predict size first, then use that value for output buffer
     *deflated_message_size = compressBound([message length]);
     *deflated_message      = malloc(*deflated_message_size);
 
-    int result = compress(*deflated_message,
-                          deflated_message_size,
-                          [message bytes],
-                          [message length]);
+    const int result = compress(*deflated_message,
+                                deflated_message_size,
+                                [message bytes],
+                                [message length]);
     
     if (result != Z_OK) {
         // hopefully this doesn't fail...
@@ -316,7 +318,7 @@ compress_message(NSData* message,
 
 static
 void
-send_log(uint8_t* message, size_t message_size)
+send_log(uint8_t* const message, const size_t message_size)
 {
     // First, generate a message_id hash from hostname and a timestamp;
 
@@ -324,10 +326,13 @@ send_log(uint8_t* message, size_t message_size)
     // and it cannot be given since we are using memory on the stack
     struct timeval time;
     gettimeofday(&time, NULL);
-    
-    NSString* nshash = [NSHost.currentHost.localizedName
-                        stringByAppendingString:[@(time.tv_usec) stringValue]];
-    const char* chash = [nshash cStringUsingEncoding:NSUTF8StringEncoding];
+
+    NSString* const stamp =
+        [@(time.tv_usec) stringValue];
+    NSString* const nshash =
+        [NSHost.currentHost.localizedName stringByAppendingString:stamp];
+    const char* const chash =
+        [nshash cStringUsingEncoding:NSUTF8StringEncoding];
     
     // calculate hash
     uint64 hash = P1;
@@ -354,11 +359,11 @@ send_log(uint8_t* message, size_t message_size)
             
             graylog_header header;
             memcpy(&header.message_id, &hash, sizeof(message_id_t));
-            memcpy(&header.chunked, &chunked, CHUNKED_SIZE);
+            memcpy(&header.chunked, &chunked, chunked_size);
             header.sequence = (Byte)i;
             header.total    = (Byte)chunk_count;
             
-            NSMutableData* new_chunk =
+            NSMutableData* const new_chunk =
                 [[NSMutableData alloc]
                     initWithCapacity:(sizeof(graylog_header) + chunk.length)];
 
@@ -367,10 +372,11 @@ send_log(uint8_t* message, size_t message_size)
             chunk = new_chunk;
         }
 
-        CFSocketError send_error = CFSocketSendData(graylog_socket,
-                                                    NULL,
-                                                    (__bridge CFDataRef)chunk,
-                                                    1);
+        const CFSocketError send_error =
+            CFSocketSendData(graylog_socket,
+                             NULL,
+                             (__bridge CFDataRef)chunk,
+                             1);
         if (send_error)
             GRAYLOG_ERROR(MCGraylogLogFacility,
                           @"SendData failed: %ldl", send_error);
@@ -381,10 +387,10 @@ send_log(uint8_t* message, size_t message_size)
 
 
 void
-graylog_log(GraylogLogLevel level,
-            NSString* facility,
-            NSString* message,
-            NSDictionary *data)
+graylog_log(const GraylogLogLevel level,
+            NSString* const facility,
+            NSString* const message,
+            NSDictionary* const data)
 {
     // ignore messages that are not important enough to log
     if (level > max_log_level) return;
@@ -395,17 +401,18 @@ graylog_log(GraylogLogLevel level,
 
     if (_graylog_queue) {
         dispatch_async(_graylog_queue, ^() {
-            NSData* formatted_message = format_message(level,
-                                                       facility,
-                                                       message,
-                                                       data);
+            NSData* const formatted_message = format_message(level,
+                                                             facility,
+                                                             message,
+                                                             data);
             if (!formatted_message) return;
             
             uint8_t* compressed_message      = NULL;
             size_t   compressed_message_size = 0;
-            int compress_result = compress_message(formatted_message,
-                                                   &compressed_message,
-                                                   &compressed_message_size);
+            const int compress_result =
+                compress_message(formatted_message,
+                                 &compressed_message,
+                                 &compressed_message_size);
             if (compress_result) return;
             
             send_log(compressed_message, compressed_message_size);

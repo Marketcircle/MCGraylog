@@ -36,7 +36,7 @@ typedef NS_ENUM(NSUInteger, GraylogLogLevel) {
  *        if a message is logged with a higher level it will be ignored
  * @return 0 on success, otherwise -1.
  */
-int graylog_init(NSURL* graylog_url, GraylogLogLevel level);
+int graylog_init(NSURL* const graylog_url, const GraylogLogLevel level);
 
 /**
  * Free any global state that was created by graylog_init.
@@ -54,7 +54,7 @@ GraylogLogLevel graylog_log_level();
 /**
  * @param level the new log level
  */
-void graylog_set_log_level(GraylogLogLevel level);
+void graylog_set_log_level(const GraylogLogLevel level);
 
 
 #pragma mark Logging
@@ -72,10 +72,10 @@ void graylog_set_log_level(GraylogLogLevel level);
  * @param userInfo Any additional information that might be useful that is JSON
  *                serializable (e.g. numbers, strings, arrays, dictionaries)
  */
-void graylog_log(GraylogLogLevel lvl,
-                 NSString* facility,
-                 NSString* message,
-                 NSDictionary* userInfo);
+void graylog_log(const GraylogLogLevel lvl,
+                 NSString* const facility,
+                 NSString* const message,
+                 NSDictionary* const userInfo);
 
 
 #define GRAYLOG_LOG(level, facility, format, ...) {                         \
