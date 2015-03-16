@@ -198,7 +198,6 @@ graylog_deinit()
 {
     if (_graylog_queue) {
         dispatch_barrier_sync(_graylog_queue, ^() {});
-        DISPATCH_RELEASE(_graylog_queue);
         _graylog_queue = NULL;
     }
     

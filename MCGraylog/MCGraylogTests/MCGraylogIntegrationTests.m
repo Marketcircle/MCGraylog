@@ -85,11 +85,6 @@ static NSPipe* outputPipe;
 }
 
 
-- (void)dealloc {
-    DISPATCH_RELEASE(self.output_semaphore);
-}
-
-
 - (NSDictionary*)parseResponse:(NSData*)data {
 
     NSError* parse_error = nil;
