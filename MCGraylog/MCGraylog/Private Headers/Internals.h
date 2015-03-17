@@ -10,3 +10,5 @@
 #define MCGraylog_Internals_h
 
 dispatch_queue_t graylog_queue();
+
+#endif
