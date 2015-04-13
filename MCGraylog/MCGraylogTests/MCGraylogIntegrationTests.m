@@ -143,9 +143,9 @@ static NSPipe* outputPipe;
     graylog_log(GraylogLogLevelInformational, @"test", @"message", @{});
     WAIT_FOR_RESPONSE;
     
-    XCTAssertEqualObjects(response[@"@fields"][@"short_message"], @"message",
+    XCTAssertEqualObjects(response[@"message"], @"message",
                           @"Short message should be test");
-    XCTAssertEqualObjects(response[@"@fields"][@"facility"], @"test",
+    XCTAssertEqualObjects(response[@"facility"], @"test",
                           @"Short message should be test");
 }
 
@@ -171,7 +171,7 @@ static NSPipe* outputPipe;
                      [NSString stringWithFormat:@"%ld", [obj longValue]],
                      nil);
          WAIT_FOR_RESPONSE;
-         XCTAssertEqualObjects(response[@"@fields"][@"level"],
+         XCTAssertEqualObjects(response[@"level"],
                                obj,
                                @"Wrong log level in response: %@", response);
          
@@ -189,7 +189,7 @@ static NSPipe* outputPipe;
                   });
     WAIT_FOR_RESPONSE;
 
-    id lhs = response[@"@fields"][@"_custom_field"];
+    id lhs = response[@"custom_field"];
     id rhs = @"hello";
     XCTAssertEqualObjects(lhs, rhs);
 }
@@ -203,7 +203,7 @@ static NSPipe* outputPipe;
                   @"custom_field": @5
                   });
     WAIT_FOR_RESPONSE;
-    XCTAssertEqualObjects(response[@"@fields"][@"_custom_field"], @5);
+    XCTAssertEqualObjects(response[@"custom_field"], @5);
 }
 
 
@@ -213,8 +213,8 @@ static NSPipe* outputPipe;
                 @"message",
                 @{ @"id": @"hello" });
     WAIT_FOR_RESPONSE;
-    XCTAssertNil(response[@"@fields"][@"_id"], @"hello", nil);
-    XCTAssertEqualObjects(response[@"@fields"][@"_userInfo_id"], @"hello");
+    XCTAssertNil(response[@"_id"], @"hello", nil);
+    XCTAssertEqualObjects(response[@"userInfo_id"], @"hello");
 }
 
 
@@ -242,7 +242,7 @@ static NSPipe* outputPipe;
     
     GRAYLOG_NOTICE(@"test", @"%@", string);
     WAIT_FOR_RESPONSE;
-    XCTAssertEqualObjects(response[@"@fields"][@"short_message"], string,
+    XCTAssertEqualObjects(response[@"short_message"], string,
                           @"Message was corrupt?");
 }
 
@@ -276,7 +276,7 @@ static NSPipe* outputPipe;
 - (void) testLoggingEmptyString {
     GRAYLOG_ALERT(@"test", @"");
     WAIT_FOR_RESPONSE;
-    id lhs = response[@"@fields"][@"short_message"];
+    id lhs = response[@"message"];
     XCTAssertEqualObjects(lhs, @"", @"%@", [response description]);
 }
 
@@ -284,7 +284,7 @@ static NSPipe* outputPipe;
 - (void) testLoggingEmptyFacility {
     GRAYLOG_ALERT(@"", @"message");
     WAIT_FOR_RESPONSE;
-    XCTAssertEqualObjects(response[@"@fields"][@"facility"], @"",
+    XCTAssertEqualObjects(response[@"facility"], @"",
                           @"%@", [response description]);
 }
 
