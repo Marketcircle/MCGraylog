@@ -9,10 +9,11 @@ Pod::Spec.new do |s|
   s.author       = { "Mark Rada" => "mrada@marketcircle.com",
                      "Thomas Bartelmess" => "tbartelmess@marketcircle.com",
                      "Jordan Valadas" => "jvaladas@marketcircle.com" }
-  s.source       = { :git => "https://github.com/Marketcircle/MCGraylog.git", :tag => "0.9.9" }
+  s.source       = { :git => "https://github.com/Marketcircle/MCGraylog.git", :tag => "0.9.10" }
   s.osx.deployment_target = '10.8'
   s.source_files = 'MCGraylog/MCGraylog/MCGraylog.h'
   s.public_header_files = 'MCGraylog/MCGraylog/MCGraylog.h'
   s.library   = 'libz'
   s.requires_arc = true
+  s.dependency 'CocoaLumberjack', '~> 2.0'
 end
