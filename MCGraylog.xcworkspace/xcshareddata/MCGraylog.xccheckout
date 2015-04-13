@@ -10,6 +10,8 @@
 	<string>MCGraylog</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
+		<key>35B5C9A93714EC9BEB56BAE809C5551E5C66E52D</key>
+		<string>https://github.com/CocoaLumberjack/CocoaLumberjack.git</string>
 		<key>4A6C7586C17FD73D6324750AD1A8C758070AE313</key>
 		<string>ssh://git.marketcircle.net:7999/cl/mcgraylog.git</string>
 		<key>C63B49EE22C0FD0E5649D8CE5933D872EEEEBD03</key>
@@ -19,6 +21,8 @@
 	<string>MCGraylog.xcworkspace</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
+		<key>35B5C9A93714EC9BEB56BAE809C5551E5C66E52D</key>
+		<string>../Dependencies/CocoaLumberjack</string>
 		<key>4A6C7586C17FD73D6324750AD1A8C758070AE313</key>
 		<string>..</string>
 		<key>C63B49EE22C0FD0E5649D8CE5933D872EEEEBD03</key>
@@ -39,6 +43,14 @@
 			<string>C63B49EE22C0FD0E5649D8CE5933D872EEEEBD03</string>
 			<key>IDESourceControlWCCName</key>
 			<string></string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>35B5C9A93714EC9BEB56BAE809C5551E5C66E52D</string>
+			<key>IDESourceControlWCCName</key>
+			<string>CocoaLumberjack</string>
 		</dict>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>

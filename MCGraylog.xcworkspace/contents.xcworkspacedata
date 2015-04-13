@@ -4,4 +4,7 @@
    <FileRef
       location = "group:MCGraylog/MCGraylog.xcodeproj">
    </FileRef>
+   <FileRef
+      location = "group:Dependencies/CocoaLumberjack/Framework/Desktop/Lumberjack.xcodeproj">
+   </FileRef>
 </Workspace>
