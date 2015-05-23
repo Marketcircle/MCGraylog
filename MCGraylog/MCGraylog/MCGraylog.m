@@ -247,7 +247,7 @@ format_message(const GraylogLogLevel lvl,
 
     dict[@"version"]       = @"1.0";
     dict[@"host"]          = NSHost.currentHost.localizedName;
-    dict[@"timestamp"]     = @([NSDate.date timeIntervalSince1970]);
+    dict[@"timestamp"]     = @(time(NULL));
     dict[@"facility"]      = facility;
     dict[@"level"]         = @(lvl);
     dict[@"short_message"] = message;
