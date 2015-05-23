@@ -6,7 +6,11 @@
 //  Copyright (c) 2013 Marketcircle. All rights reserved.
 //
 
+#ifdef __cplusplus
 #import <Foundation/Foundation.h>
+#else
+@import Foundation;
+#endif
 
 typedef NS_ENUM(NSUInteger, GraylogLogLevel) {
     GraylogLogLevelUnknown       = 0,
