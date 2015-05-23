@@ -11,5 +11,4 @@
 FOUNDATION_EXPORT double MCGraylogLumberjackSupportVersionNumber;
 FOUNDATION_EXPORT const unsigned char MCGraylogLumberjackSupportVersionString[];
 
-
-
+#import <MCGraylogLumberjackSupport/MCGraylogLogger.h>
