@@ -110,15 +110,18 @@ graylog_init_socket(NSURL* const graylog_url)
             return -1;
         }
         
-        // 1 second of timeout is more than enough, UDP "connect" should
-        // only need to set a couple of things in kernel land
-        const int bind_result = bind(graylog_socket, (struct sockaddr*)&addr, address_length);
-        if (bind_result == -1) {
+        const int connect_result =
+            connect(graylog_socket, (struct sockaddr*)&addr, address_length);
+
+        if (connect_result == -1) {
             if (i == (addresses_count - 1))
                 NSLog(@"Failed to connect to all addresses of %@", graylog_url);
 
-            NSLog(@"Failed to connect to address of %@: %@", graylog_url, @(strerror(errno)));
+            NSLog(@"Failed to connect to address of %@ (%d): %@",
+                  graylog_url, errno, @(strerror(errno)));
+
             close(graylog_socket);
+            graylog_socket = -1;
             continue;
         }
 
