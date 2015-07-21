@@ -17,11 +17,16 @@ GraylogLogLevel graylog_level_for_javin_level(const DDLogLevel level);
 
 static NSString* const JNGraylogLoggerFacility = @"Javin";
 
-@implementation MCGraylogLogger
+@implementation MCGraylogLogger {
+    NSString* facility;
+}
+
+@synthesize loggerFacility = facility;
 
 - (instancetype)initWithServer:(NSURL *)graylogServer graylogLevel:(GraylogLogLevel)level {
     if (!(self = [super init])) return nil;
     graylog_init(graylogServer, level);
+    self->facility = JNGraylogLoggerFacility;
     return self;
 } /* - initWithServer:graylogLevel: */
 
@@ -51,7 +56,6 @@ graylog_level_for_javin_level(const DDLogLevel level)
     }
 }
 
-
 - (void)logMessage:(DDLogMessage* const)logMessage {
     NSString* logMsg = nil;
     if (self->_logFormatter)
@@ -67,7 +71,7 @@ graylog_level_for_javin_level(const DDLogLevel level)
         dataDictionary = logMessage.tag;
     }
 
-    graylog_log(level, JNGraylogLoggerFacility, logMsg, dataDictionary);
+    graylog_log(level, self->facility, logMsg, dataDictionary);
 } /* - logMessage: */
 
 @end
