@@ -20,7 +20,7 @@
 
 static GraylogLogLevel max_log_level       = GraylogLogLevelDebug;
 static dispatch_queue_t _graylog_queue     = NULL;
-static CFSocketRef graylog_socket          = NULL;
+static int   graylog_socket                = -1;
 static const uLong max_chunk_size          = 65507;
 static const Byte  chunked[2]              = {0x1e, 0x0f};
 static const uint16_t graylog_default_port = 12201;
@@ -93,76 +93,35 @@ graylog_init_socket(NSURL* const graylog_url)
         
         CFDataRef const address =
             (CFDataRef)CFArrayGetValueAtIndex(addresses, i);
-        
-        // make a copy that we can futz with
-        CFDataRef address_info = CFDataCreateCopy(kCFAllocatorDefault, address);
-        int pf_version = PF_INET6;
 
-// This warning is safe to ignore in this case because the CFData objects
-// actually contain the structs which the pointers are being cast to, so there
-// will be no alignment related exceptions at runtime
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wcast-align"
-        if (CFDataGetLength(address) == sizeof(struct sockaddr_in6)) {
-            struct sockaddr_in6* addr =
-                (struct sockaddr_in6*)CFDataGetBytePtr(address_info);
-            addr->sin6_port = htons(port);
-            pf_version = PF_INET6;
-        }
-        else if (CFDataGetLength(address) == sizeof(struct sockaddr_in)) {
-            struct sockaddr_in* addr =
-                (struct sockaddr_in*)CFDataGetBytePtr(address_info);
-            addr->sin_port = htons(port);
-            pf_version = PF_INET;
-        }
-        else {
-            // leak memory because this exception should not be caught
-            [NSException raise:NSInternalInconsistencyException
-                        format:@"Got an address of weird length: %@",
-                               (__bridge NSData*)address];
-        }
-#pragma clang diagnostic pop
-        
-        graylog_socket = CFSocketCreate(kCFAllocatorDefault,
-                                        pf_version,
-                                        SOCK_DGRAM,
-                                        IPPROTO_UDP,
-                                        kCFSocketNoCallBack,
-                                        NULL, // callback function
-                                        NULL); // callback context
-        
-        // completely bail
-        if (!graylog_socket) {
-            NSLog(@"Failed to allocate socket for graylog");
-            CFRelease(address_info);
+        const socklen_t address_length = (socklen_t)CFDataGetLength(address);
+        const int pf_version =
+            address_length == sizeof(struct sockaddr_in6) ? PF_INET6 : PF_INET;
+
+        struct sockaddr_in6 addr;
+        memcpy(&addr, CFDataGetBytePtr(address), address_length);
+        addr.sin6_port = htons(port);
+
+        graylog_socket = socket(pf_version, SOCK_DGRAM, IPPROTO_UDP);
+
+        if (graylog_socket == -1) {
+            NSLog(@"Failed to allocate socket for graylog: %@", @(strerror(errno)));
             CFRelease(host);
             return -1;
         }
         
         // 1 second of timeout is more than enough, UDP "connect" should
         // only need to set a couple of things in kernel land
-        switch (CFSocketConnectToAddress(graylog_socket, address_info, 1)) {
-            case kCFSocketSuccess:
-                CFRelease(address_info);
-                CFRelease(host);
-                return 0;
-                
-            case kCFSocketError:
-                if (i == (addresses_count - 1))
-                    NSLog(@"Failed to connect to all addresses of %@",
-                          graylog_url);
-                CFRelease(graylog_socket);
-                CFRelease(address_info);
-                continue;
-                
-            case kCFSocketTimeout:
-                CFRelease(graylog_socket);
-                CFRelease(address_info);
-                CFRelease(host);
-                [NSException raise:NSInternalInconsistencyException
-                            format:@"Somehow timed out performing UDP connect"];
-                return -1;
+        const int bind_result = bind(graylog_socket, (struct sockaddr*)&addr, address_length);
+        if (bind_result == -1) {
+            if (i == (addresses_count - 1))
+                NSLog(@"Failed to connect to all addresses of %@", graylog_url);
+            close(graylog_socket);
+            continue;
         }
+
+        CFRelease(host);
+        return 0;
     }
     
     
@@ -201,10 +160,9 @@ graylog_deinit()
         _graylog_queue = NULL;
     }
     
-    if (graylog_socket) {
-        CFSocketInvalidate(graylog_socket);
-        CFRelease(graylog_socket);
-        graylog_socket = NULL;
+    if (graylog_socket != -1) {
+        close(graylog_socket);
+        graylog_socket = -1;
     }
     
     max_log_level = GraylogLogLevelDebug;
@@ -315,73 +273,85 @@ compress_message(NSData* const message,
 }
 
 
+// the hashing algorithm suggested by Graylog documenation
+// for use in graylog_headers
 static
-void
-send_log(uint8_t* const message, const size_t message_size)
+uint64_t
+graylog_hash()
 {
-    // First, generate a message_id hash from hostname and a timestamp;
+    uint64_t hash = P1;
+
+    NSString* const name = NSHost.currentHost.localizedName;
+    const char* const utf8_name = name.UTF8String;
 
     // skip error check, only EFAULT is documented for this function
     // and it cannot be given since we are using memory on the stack
     struct timeval time;
     gettimeofday(&time, NULL);
+    char time_str[16];
+    snprintf(time_str, sizeof(time_str), "%d", time.tv_usec);
 
-    NSString* const stamp =
-        [@(time.tv_usec) stringValue];
-    NSString* const nshash =
-        [NSHost.currentHost.localizedName stringByAppendingString:stamp];
-    const char* const chash =
-        [nshash cStringUsingEncoding:NSUTF8StringEncoding];
-    
     // calculate hash
-    uint64 hash = P1;
-    for (const char* p = chash; *p != 0; p++)
+    for (const char* p = utf8_name; *p; ++p)
+        hash = hash * P2 + *p;
+    for (const char* p = time_str; *p; ++p)
         hash = hash * P2 + *p;
 
+    return hash;
+}
+
+
+static
+void
+send_log(uint8_t* const message, const size_t message_size)
+{
     // calculate the number of chunks that we will need to make
     uLong chunk_count = message_size / max_chunk_size;
     if (message_size % max_chunk_size)
-        chunk_count++;
+        ++chunk_count;
 
+    // in the most likely case, we only need one message chunk,
+    // so we have a fast path for that case
+    if (chunk_count == 1) {
+        ssize_t send_result = send(graylog_socket, message, message_size, 0);
+        if (send_result == -1)
+            GRAYLOG_ERROR(MCGraylogLogFacility,
+                          @"send(2) failed: %@", @(strerror(errno)));
+
+        return;
+    }
+
+    // in the less likely case, we need to break the message up
+    // and wish that we were using TCP instead of UDP, but whatevs
+
+    const uint64_t hash = graylog_hash();
     size_t remain = message_size;
-    for (uLong i = 0; i < chunk_count; i++) {
+
+    for (uLong i = 0; i < chunk_count; ++i) {
         size_t bytes_to_copy = MIN(remain, max_chunk_size);
         remain -= bytes_to_copy;
 
-        NSData* chunk =
-            [NSData dataWithBytesNoCopy:(message + (i*max_chunk_size))
-                                 length:bytes_to_copy
-                           freeWhenDone:NO];
-        
-        // Append chunk header if we're sending multiple chunks
-        if (chunk_count > 1) {
-            
-            graylog_header header;
-            memcpy(&header.message_id, &hash, sizeof(message_id_t));
-            memcpy(&header.chunked, &chunked, chunked_size);
-            header.sequence = (Byte)i;
-            header.total    = (Byte)chunk_count;
-            
-            NSMutableData* const new_chunk =
-                [[NSMutableData alloc]
-                    initWithCapacity:(sizeof(graylog_header) + chunk.length)];
+        const size_t chunk_length = sizeof(graylog_header) + bytes_to_copy;
+        NSMutableData* const chunk =
+            [[NSMutableData alloc] initWithCapacity:chunk_length];
 
-            [new_chunk appendBytes:&header length:sizeof(graylog_header)];
-            [new_chunk appendData:chunk];
-            chunk = new_chunk;
-        }
+        graylog_header* header = chunk.mutableBytes;
+        memcpy(&header->chunked,    &chunked, chunked_size);
+        memcpy(&header->message_id, &hash,    sizeof(message_id_t));
+        header->sequence = (Byte)i;
+        header->total    = (Byte)chunk_count;
+            
+        [chunk appendBytes:(message + (i*max_chunk_size))
+                    length:bytes_to_copy];
 
-        const CFSocketError send_error =
-            CFSocketSendData(graylog_socket,
-                             NULL,
-                             (__bridge CFDataRef)chunk,
-                             1);
-        if (send_error)
+        const ssize_t send_result =
+            send(graylog_socket, header, chunk_length, 0);
+
+        if (send_result == -1)
             GRAYLOG_ERROR(MCGraylogLogFacility,
-                          @"SendData failed: %ldl", send_error);
-        
-    }
+                          @"send(2) failed: %@", @(strerror(errno)));
 
+    }
 }
 
 
