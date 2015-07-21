@@ -116,6 +116,8 @@ graylog_init_socket(NSURL* const graylog_url)
         if (bind_result == -1) {
             if (i == (addresses_count - 1))
                 NSLog(@"Failed to connect to all addresses of %@", graylog_url);
+
+            NSLog(@"Failed to connect to address of %@: %@", graylog_url, @(strerror(errno)));
             close(graylog_socket);
             continue;
         }
