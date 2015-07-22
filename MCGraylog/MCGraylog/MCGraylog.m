@@ -320,9 +320,7 @@ send_log(uint8_t* const message, const size_t message_size)
     if (chunk_count == 1) {
         ssize_t send_result = send(graylog_socket, message, message_size, 0);
         if (send_result == -1)
-            GRAYLOG_ERROR(MCGraylogLogFacility,
-                          @"send(2) failed: %@", @(strerror(errno)));
-
+            NSLog(@"Failed to send log to Graylog (%d): %@", errno, @(strerror(errno)));
         return;
     }
 
@@ -353,9 +351,7 @@ send_log(uint8_t* const message, const size_t message_size)
             send(graylog_socket, header, chunk_length, 0);
 
         if (send_result == -1)
-            GRAYLOG_ERROR(MCGraylogLogFacility,
-                          @"send(2) failed: %@", @(strerror(errno)));
-
+            NSLog(@"Failed to send log to Graylog (%d): %@", errno, @(strerror(errno)));
     }
 }
 
