@@ -10,9 +10,9 @@
 		2E113C0E1ADBEBDF00CB6A43 /* MCGraylogLumberjackSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 2E113C0D1ADBEBDF00CB6A43 /* MCGraylogLumberjackSupport.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2E113C2C1ADBEC3D00CB6A43 /* MCGraylogLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 2E113C291ADBEC3D00CB6A43 /* MCGraylogLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2E113C2D1ADBEC3D00CB6A43 /* MCGraylogLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 2E113C2A1ADBEC3D00CB6A43 /* MCGraylogLogger.m */; };
-		2E113C2F1ADBECCA00CB6A43 /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2E113C2E1ADBECCA00CB6A43 /* CocoaLumberjack.framework */; };
-		2E113C301ADBECE000CB6A43 /* MCGraylog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B855869B1737FDA400945AF3 /* MCGraylog.framework */; };
 		2E113C3B1ADBEE0000CB6A43 /* MCGraylogLumberjackSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2E113C091ADBEBDF00CB6A43 /* MCGraylogLumberjackSupport.framework */; };
+		2EA2704E1B6A6A8100AFA2FE /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2EA2704D1B6A6A8100AFA2FE /* CocoaLumberjack.framework */; };
+		2EA2704F1B6A6A8400AFA2FE /* MCGraylog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B855869B1737FDA400945AF3 /* MCGraylog.framework */; };
 		2ED8BABC17551CFA00F6F3D6 /* MCGraylog.h in Headers */ = {isa = PBXBuildFile; fileRef = B85586AB1737FDA400945AF3 /* MCGraylog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2EFC142D1ADBF99A00CB6A43 /* MCGraylogLogger_Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2E113C281ADBEC3D00CB6A43 /* MCGraylogLogger_Tests.m */; };
 		92711D0F17B2A71E004BAE9C /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92711D0E17B2A71E004BAE9C /* CFNetwork.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
@@ -51,10 +51,10 @@
 		2E113C281ADBEC3D00CB6A43 /* MCGraylogLogger_Tests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MCGraylogLogger_Tests.m; path = ../MCGraylogLumberjackSupport/MCGraylogLogger_Tests.m; sourceTree = "<group>"; };
 		2E113C291ADBEC3D00CB6A43 /* MCGraylogLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCGraylogLogger.h; sourceTree = "<group>"; };
 		2E113C2A1ADBEC3D00CB6A43 /* MCGraylogLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCGraylogLogger.m; sourceTree = "<group>"; };
-		2E113C2E1ADBECCA00CB6A43 /* CocoaLumberjack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaLumberjack.framework; path = ../../../../../../../../Developer/mcgraylog/Dependencies/CocoaLumberjack/Framework/Desktop/build/Release/CocoaLumberjack.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E113C351ADBEE0000CB6A43 /* MCGraylogLumberjackSupport Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "MCGraylogLumberjackSupport Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E113C381ADBEE0000CB6A43 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2E638C2E1753E78C009E98BD /* MCGraylogIntegrationTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MCGraylogIntegrationTests.m; path = ../MCGraylogTests/MCGraylogIntegrationTests.m; sourceTree = "<group>"; };
+		2EA2704D1B6A6A8100AFA2FE /* CocoaLumberjack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaLumberjack.framework; path = "../../../../../Library/Developer/Xcode/DerivedData/Javin-gzfhfsalzfetrtaoaxyyhfwsbwgm/Build/Products/Debug/CocoaLumberjack.framework"; sourceTree = "<group>"; };
 		92711D0E17B2A71E004BAE9C /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		AF5B0A70179C8B7A0056C6E8 /* MCGraylogTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MCGraylogTests.m; path = ../MCGraylogTests/MCGraylogTests.m; sourceTree = "<group>"; };
 		AFC59FD6179D7FC800816DA2 /* Internals.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Internals.h; path = "MCGraylog/Private Headers/Internals.h"; sourceTree = "<group>"; };
@@ -76,8 +76,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2E113C301ADBECE000CB6A43 /* MCGraylog.framework in Frameworks */,
-				2E113C2F1ADBECCA00CB6A43 /* CocoaLumberjack.framework in Frameworks */,
+				2EA2704E1B6A6A8100AFA2FE /* CocoaLumberjack.framework in Frameworks */,
+				2EA2704F1B6A6A8400AFA2FE /* MCGraylog.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -200,7 +200,7 @@
 		B855869D1737FDA400945AF3 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				2E113C2E1ADBECCA00CB6A43 /* CocoaLumberjack.framework */,
+				2EA2704D1B6A6A8100AFA2FE /* CocoaLumberjack.framework */,
 				92711D0E17B2A71E004BAE9C /* CFNetwork.framework */,
 				B85586CD1737FE4200945AF3 /* libz.dylib */,
 				B85586A31737FDA400945AF3 /* Foundation.framework */,
@@ -475,7 +475,10 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/Javin-gzfhfsalzfetrtaoaxyyhfwsbwgm/Build/Products/Debug",
+				);
 				FRAMEWORK_VERSION = A;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -514,7 +517,10 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/Javin-gzfhfsalzfetrtaoaxyyhfwsbwgm/Build/Products/Debug",
+				);
 				FRAMEWORK_VERSION = A;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
