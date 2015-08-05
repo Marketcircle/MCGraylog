@@ -16,12 +16,17 @@
 GraylogLogLevel graylog_level_for_javin_level(const DDLogLevel level);
 
 static NSString* const JNGraylogLoggerFacility = @"Javin";
+static Class dictClass = nil;
 
 @implementation MCGraylogLogger {
     NSString* facility;
 }
 
 @synthesize loggerFacility = facility;
+
++ (void)initialize {
+    dictClass = [NSDictionary class];
+}
 
 - (instancetype)initWithServer:(NSURL *)graylogServer graylogLevel:(GraylogLogLevel)level {
     return [self initWithServer:graylogServer graylogLevel:level facility:JNGraylogLoggerFacility];
@@ -75,9 +80,9 @@ graylog_level_for_javin_level(const DDLogLevel level)
     const GraylogLogLevel level =
         graylog_level_for_javin_level(logMessage->_level);
 
-    NSDictionary * dataDictionary = nil;
-    if ([logMessage.tag isKindOfClass:[NSDictionary class]]) {
-        dataDictionary = logMessage.tag;
+    NSDictionary* dataDictionary = nil;
+    if ([logMessage->_tag isKindOfClass:dictClass]) {
+        dataDictionary = logMessage->_tag;
     }
 
     _graylog_log(level, self->facility, logMsg, dataDictionary);
