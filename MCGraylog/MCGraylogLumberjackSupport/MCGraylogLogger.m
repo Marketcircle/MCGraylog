@@ -24,15 +24,24 @@ static NSString* const JNGraylogLoggerFacility = @"Javin";
 @synthesize loggerFacility = facility;
 
 - (instancetype)initWithServer:(NSURL *)graylogServer graylogLevel:(GraylogLogLevel)level {
+    return [self initWithServer:graylogServer graylogLevel:level facility:JNGraylogLoggerFacility];
+}
+
+- (instancetype)initWithServer:(NSURL*)graylogServer
+                  graylogLevel:(GraylogLogLevel)level
+                      facility:(NSString*)init_facility
+{
     if (!(self = [super init])) return nil;
+
     graylog_init(graylogServer, level);
-    self->facility = JNGraylogLoggerFacility;
-    return self;
-} /* - initWithServer:graylogLevel: */
+    self->facility = init_facility;
+
+    return init_facility ? self : nil;
+}
 
 - (void)dealloc {
     graylog_deinit();
-} /* - dealloc */
+}
 
 GraylogLogLevel
 graylog_level_for_javin_level(const DDLogLevel level)
