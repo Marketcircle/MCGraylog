@@ -357,6 +357,32 @@ send_log(uint8_t* const message, const size_t message_size)
 
 
 void
+_graylog_log(const GraylogLogLevel level,
+             __unsafe_unretained NSString* const facility,
+             __unsafe_unretained NSString* const message,
+             __unsafe_unretained NSDictionary* const data)
+{
+    NSData* const formatted_message = format_message(level,
+                                                     facility,
+                                                     message,
+                                                     data);
+    if (!formatted_message) return;
+
+    uint8_t* compressed_message      = NULL;
+    size_t   compressed_message_size = 0;
+    const int compress_result =
+    compress_message(formatted_message,
+                     &compressed_message,
+                     &compressed_message_size);
+    if (compress_result) return;
+
+    send_log(compressed_message, compressed_message_size);
+
+    free(compressed_message); // don't forget!
+}
+
+
+void
 graylog_log(const GraylogLogLevel level,
             NSString* const facility,
             NSString* const message,
@@ -369,28 +395,10 @@ graylog_log(const GraylogLogLevel level,
         [NSException raise:NSInvalidArgumentException
                     format:@"Facility: %@; Message: %@", facility, message];
 
-    if (_graylog_queue) {
-        dispatch_async(_graylog_queue, ^() {
-            NSData* const formatted_message = format_message(level,
-                                                             facility,
-                                                             message,
-                                                             data);
-            if (!formatted_message) return;
-            
-            uint8_t* compressed_message      = NULL;
-            size_t   compressed_message_size = 0;
-            const int compress_result =
-                compress_message(formatted_message,
-                                 &compressed_message,
-                                 &compressed_message_size);
-            if (compress_result) return;
-            
-            send_log(compressed_message, compressed_message_size);
-            
-            free(compressed_message); // don't forget!
-        });
-    }
-    else {
+    if (_graylog_queue == NULL) {
         NSLog(@"Graylog: %@: %@\nuserInfo=%@", facility, message, data);
+        return;
     }
+
+    dispatch_async(_graylog_queue, ^{ _graylog_log(level, facility, message, data); });
 }

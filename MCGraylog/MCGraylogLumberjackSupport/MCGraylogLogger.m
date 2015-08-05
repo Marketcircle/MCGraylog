@@ -7,8 +7,8 @@
 //
 
 #import <MCGraylog/MCGraylog.h>
+#import <MCGraylog/Internals.h>
 #import "MCGraylogLogger.h"
-
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdirect-ivar-access"
@@ -80,8 +80,8 @@ graylog_level_for_javin_level(const DDLogLevel level)
         dataDictionary = logMessage.tag;
     }
 
-    graylog_log(level, self->facility, logMsg, dataDictionary);
-} /* - logMessage: */
+    _graylog_log(level, self->facility, logMsg, dataDictionary);
+}
 
 @end
 
