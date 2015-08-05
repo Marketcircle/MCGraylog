@@ -49,23 +49,19 @@ static Class dictClass = nil;
 }
 
 GraylogLogLevel
-graylog_level_for_javin_level(const DDLogLevel level)
+graylog_level_for_lumberjack_flag(const DDLogFlag level)
 {
     switch (level) {
-        case DDLogLevelOff:       return GraylogLogLevelEmergency;
-        case DDLogLevelError:     return GraylogLogLevelError;
-        case DDLogLevelWarning:   return GraylogLogLevelWarning;
-        case DDLogLevelInfo:      return GraylogLogLevelInfo;
-        case DDLogLevelDebug:     return GraylogLogLevelDebug;
-        case DDLogLevelVerbose:   return GraylogLogLevelDebug;
-        case DDLogLevelAll:       return GraylogLogLevelDebug;
-        // DDLogLevel is a bit of strange enum, by which I mean it takes on non-standard values
-        // and I worry that one day someone will just cast an int somewhere that is not a proper
-        // DDLogLevel and then send it through this function...
+        case DDLogFlagError:            return GraylogLogLevelError;
+        case DDLogFlagWarning:          return GraylogLogLevelWarning;
+        case DDLogFlagInfo:             return GraylogLogLevelInformational;
+        case DDLogFlagDebug:            return GraylogLogLevelDebug;
+        case DDLogFlagVerbose:          return GraylogLogLevelDebug;
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wcovered-switch-default"
-        default:
-            return GraylogLogLevelEmergency;
+        // DDLogFlag may add more levels in the future, so we need to do a bit
+        // of future proofing
+        default:                        return GraylogLogLevelEmergency;
 #pragma clang diagnostic pop
     }
 }
@@ -78,7 +74,7 @@ graylog_level_for_javin_level(const DDLogLevel level)
         logMsg = logMessage->_message;
 
     const GraylogLogLevel level =
-        graylog_level_for_javin_level(logMessage->_level);
+        graylog_level_for_lumberjack_flag(logMessage->_flag);
 
     NSDictionary* dataDictionary = nil;
     if ([logMessage->_tag isKindOfClass:dictClass]) {
