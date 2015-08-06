@@ -744,6 +744,7 @@
 				GCC_PREFIX_HEADER = "MCGraylog/MCGraylog-Prefix.pch";
 				INFOPLIST_FILE = "MCGraylog/MCGraylog-Info.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
+				LLVM_LTO = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WARNING_CFLAGS = (
 					"-Weverything",
