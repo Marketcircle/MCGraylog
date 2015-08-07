@@ -156,12 +156,13 @@ graylog_init(NSURL* const graylog_url, const GraylogLogLevel init_level)
     return 0;
 }
 
+static void empty_func(__unused void* const ctx) {}
 
 void
 graylog_deinit()
 {
     if (_graylog_queue) {
-        dispatch_barrier_sync(_graylog_queue, ^() {});
+        dispatch_barrier_sync_f(_graylog_queue, NULL, empty_func);
         _graylog_queue = NULL;
     }
     
