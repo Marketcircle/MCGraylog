@@ -80,6 +80,9 @@ graylog_level_for_lumberjack_flag(const DDLogFlag level)
     if ([logMessage->_tag isKindOfClass:dictClass]) {
         dataDictionary = logMessage->_tag;
     }
+    else if (logMessage->_tag) {
+        dataDictionary = @{ @"tag": logMessage->_tag };
+    }
 
     _graylog_log(level, self->facility, logMsg, dataDictionary);
 }

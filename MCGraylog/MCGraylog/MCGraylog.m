@@ -203,9 +203,9 @@ graylog_queue()
 static
 NSData*
 format_message(const GraylogLogLevel lvl,
-               NSString* const facility,
-               NSString* const message,
-               NSDictionary* const xtra_data)
+               __unsafe_unretained NSString* const facility,
+               __unsafe_unretained NSString* const message,
+               __unsafe_unretained NSDictionary* const xtra_data)
 {
     NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithCapacity:8];
 
@@ -215,15 +215,13 @@ format_message(const GraylogLogLevel lvl,
     dict[@"facility"]      = facility;
     dict[@"level"]         = @(lvl);
     dict[@"short_message"] = message;
-    
-    [xtra_data enumerateKeysAndObjectsUsingBlock:
-        ^(const id key, const id obj, BOOL* const stop) {
-            if ([key isEqual: @"id"])
-                dict[@"_userInfo_id"] = obj;
-            else
-                dict[[NSString stringWithFormat:@"_%@", key]] = obj;
-        }];
-    
+
+    for (NSString* key in xtra_data.allKeys) {
+        if ([key isEqualToString:@"id"])
+            dict[@"_userInfo_id"] = xtra_data[key];
+        else
+            dict[[@"_" stringByAppendingString:key]] = xtra_data[key];
+    }
 
     NSError* error = nil;
     NSData*   data = nil;
@@ -254,7 +252,7 @@ format_message(const GraylogLogLevel lvl,
 
 static
 int
-compress_message(NSData* const message,
+compress_message(__unsafe_unretained NSData* const message,
                  uint8_t** const deflated_message,
                  size_t* const deflated_message_size)
 {
