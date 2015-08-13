@@ -337,6 +337,9 @@ send_log(uint8_t* const message, const size_t message_size)
         NSMutableData* const chunk =
             [[NSMutableData alloc] initWithCapacity:chunk_length];
 
+        // do this or we overwrite header at appendBytes:length:
+        chunk.length = sizeof(graylog_header);
+
         graylog_header* header = chunk.mutableBytes;
         memcpy(&header->chunked,    &chunked, chunked_size);
         memcpy(&header->message_id, &hash,    sizeof(message_id_t));
