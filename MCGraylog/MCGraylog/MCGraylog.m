@@ -216,7 +216,7 @@ format_message(const GraylogLogLevel lvl,
     dict[@"level"]         = @(lvl);
     dict[@"short_message"] = message;
 
-    for (NSString* key in xtra_data.allKeys) {
+    for (NSString* key in xtra_data) {
         if ([key isEqualToString:@"id"])
             dict[@"_userInfo_id"] = xtra_data[key];
         else
