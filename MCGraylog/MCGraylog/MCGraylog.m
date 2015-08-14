@@ -21,7 +21,7 @@
 static GraylogLogLevel max_log_level       = GraylogLogLevelDebug;
 static dispatch_queue_t _graylog_queue     = NULL;
 static int   graylog_socket                = -1;
-static const uLong max_chunk_size          = 65507;
+static const uLong max_chunk_size          = 8192;
 static const Byte  chunked[2]              = {0x1e, 0x0f};
 static const uint16_t graylog_default_port = 12201;
 static const int chunked_size              = 2;
