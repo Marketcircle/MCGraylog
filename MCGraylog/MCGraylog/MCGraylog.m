@@ -307,6 +307,32 @@ graylog_hash()
 
 static
 void
+send_chunk(const uint8_t* const message, const size_t message_size)
+{
+    const ssize_t send_result =
+        send(graylog_socket, message, message_size, 0);
+
+    if (send_result == (ssize_t)message_size) return;
+
+    NSCAssert(send_result == -1,
+              @"Graylog message was truncated. "
+               "Some kind of implementation error. %zd/%zd",
+              send_result,
+              message_size);
+
+    if (errno == ENOBUFS) {
+        NSLog(@"Failed to send(2) to Graylog due to transient issue, "
+               "trying again in 2 seconds");
+        sleep(2);
+        send_chunk(message, message_size);
+        return;
+    }
+
+    NSLog(@"Failed to send(2) to Graylog (%d): %@", errno, @(strerror(errno)));
+}
+
+static
+void
 send_log(uint8_t* const message, const size_t message_size)
 {
     // calculate the number of chunks that we will need to make
@@ -317,9 +343,7 @@ send_log(uint8_t* const message, const size_t message_size)
     // in the most likely case, we only need one message chunk,
     // so we have a fast path for that case
     if (chunk_count == 1) {
-        ssize_t send_result = send(graylog_socket, message, message_size, 0);
-        if (send_result == -1)
-            NSLog(@"Failed to send log to Graylog (%d): %@", errno, @(strerror(errno)));
+        send_chunk(message, message_size);
         return;
     }
 
@@ -349,11 +373,7 @@ send_log(uint8_t* const message, const size_t message_size)
         [chunk appendBytes:(message + (i*max_chunk_size))
                     length:bytes_to_copy];
 
-        const ssize_t send_result =
-            send(graylog_socket, header, chunk_length, 0);
-
-        if (send_result == -1)
-            NSLog(@"Failed to send log to Graylog (%d): %@", errno, @(strerror(errno)));
+        send_chunk((const uint8_t*)header, chunk_length);
     }
 }
 
