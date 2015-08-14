@@ -140,7 +140,7 @@ graylog_init(NSURL* const graylog_url, const GraylogLogLevel init_level)
 {
     // must create our own concurrent queue radar://14611706
     _graylog_queue = dispatch_queue_create("com.marketcircle.graylog",
-                                           DISPATCH_QUEUE_CONCURRENT);
+                                           DISPATCH_QUEUE_SERIAL);
     if (!_graylog_queue) {
         graylog_deinit();
         return -1;
