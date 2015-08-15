@@ -422,5 +422,7 @@ graylog_log(const GraylogLogLevel level,
         return;
     }
 
-    dispatch_async(_graylog_queue, ^{ _graylog_log(level, facility, message, data); });
+    dispatch_async(_graylog_queue, ^{ @autoreleasepool {
+        _graylog_log(level, facility, message, data);
+    } });
 }
