@@ -221,10 +221,13 @@ format_message(const GraylogLogLevel lvl,
     dict[@"_facility"]     = facility;
 
     for (NSString* key in xtra_data) {
-        if ([key isEqualToString:@"id"]) {
-            dict[@"_userInfo_id"] = xtra_data[key];
+        NSCAssert([key isEqualToString:@"id"], @"_id is a reserved graylog attribute");
+        NSCAssert([key isEqualToString:@"_id"], @"_id is a reserved graylog attribute");
+
+        if ([key hasPrefix:@"_"]) {
+            dict[key] = xtra_data[key];
         }
-        else if ([key hasPrefix:@"_"]) {
+        else if ([key isEqualToString:@"full_message"]) {
             dict[key] = xtra_data[key];
         }
         else {
