@@ -26,6 +26,8 @@ static const Byte  chunked[2]              = {0x1e, 0x0f};
 static const uint16_t graylog_default_port = 12201;
 static const int chunked_size              = 2;
 
+static NSString* hostname = nil;
+
 static NSString* const MCGraylogLogFacility = @"mcgraylog";
 
 #define P1 7
@@ -48,6 +50,8 @@ static
 int
 graylog_init_socket(NSURL* const graylog_url)
 {
+    hostname = NSHost.currentHost.localizedName;
+
     // get the host name string
     if (!graylog_url.host) {
         NSLog(@"nil address given as graylog_url");
@@ -207,20 +211,25 @@ format_message(const GraylogLogLevel lvl,
                __unsafe_unretained NSString* const message,
                __unsafe_unretained NSDictionary* const xtra_data)
 {
-    NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithCapacity:8];
+    NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithCapacity:16];
 
-    dict[@"version"]       = @"1.0";
-    dict[@"host"]          = NSHost.currentHost.localizedName;
-    dict[@"timestamp"]     = @(time(NULL));
-    dict[@"facility"]      = facility;
-    dict[@"level"]         = @(lvl);
+    dict[@"version"]       = @"1.1";
+    dict[@"host"]          = hostname;
     dict[@"short_message"] = message;
+    dict[@"timestamp"]     = @(time(NULL));
+    dict[@"level"]         = @(lvl);
+    dict[@"_facility"]     = facility;
 
     for (NSString* key in xtra_data) {
-        if ([key isEqualToString:@"id"])
+        if ([key isEqualToString:@"id"]) {
             dict[@"_userInfo_id"] = xtra_data[key];
-        else
+        }
+        else if ([key hasPrefix:@"_"]) {
+            dict[key] = xtra_data[key];
+        }
+        else {
             dict[[@"_" stringByAppendingString:key]] = xtra_data[key];
+        }
     }
 
     NSError* error = nil;
@@ -285,21 +294,18 @@ graylog_hash()
 {
     uint64_t hash = P1;
 
-    NSString* const name = NSHost.currentHost.localizedName;
-    const char* const utf8_name = name.UTF8String;
-
-    // skip error check, only EFAULT is documented for this function
-    // and it cannot be given since we are using memory on the stack
-    struct timeval time;
-    gettimeofday(&time, NULL);
-    char time_str[16];
-    snprintf(time_str, sizeof(time_str), "%d", time.tv_usec);
+    const char* const utf8_name = hostname.UTF8String;
 
     // calculate hash
     for (const char* p = utf8_name; *p; ++p)
         hash = hash * P2 + *p;
-    for (const char* p = time_str; *p; ++p)
-        hash = hash * P2 + *p;
+
+    size_t current_time = mach_absolute_time();
+    do {
+        const size_t digit = current_time % 10;
+        current_time /= 10;
+        hash = hash * P2 + digit;
+    } while (current_time);
 
     return hash;
 }
@@ -344,6 +350,11 @@ send_log(uint8_t* const message, const size_t message_size)
     // so we have a fast path for that case
     if (chunk_count == 1) {
         send_chunk(message, message_size);
+        return;
+    }
+
+    if (chunk_count > 128) {
+        NSLog(@"Failed to send to Graylog: too many chunks (max 128, got %lu)", chunk_count);
         return;
     }
 
