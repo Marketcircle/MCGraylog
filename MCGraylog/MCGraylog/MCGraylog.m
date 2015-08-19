@@ -221,8 +221,10 @@ format_message(const GraylogLogLevel lvl,
     dict[@"_facility"]     = facility;
 
     for (NSString* key in xtra_data) {
-        NSCAssert([key isEqualToString:@"id"], @"_id is a reserved graylog attribute");
-        NSCAssert([key isEqualToString:@"_id"], @"_id is a reserved graylog attribute");
+        NSCAssert([key isEqualToString:@"id"],
+                  @"_id is a reserved graylog attribute: %@, %@", message, xtra_data);
+        NSCAssert([key isEqualToString:@"_id"],
+                  @"_id is a reserved graylog attribute: %@, %@", message, xtra_data);
 
         if ([key hasPrefix:@"_"]) {
             dict[key] = xtra_data[key];
