@@ -67,24 +67,26 @@ graylog_level_for_lumberjack_flag(const DDLogFlag level)
 }
 
 - (void)logMessage:(DDLogMessage* const)logMessage {
-    NSString* logMsg = nil;
-    if (self->_logFormatter)
-        logMsg = [self->_logFormatter formatLogMessage:logMessage];
-    else
-        logMsg = logMessage->_message;
-
     const GraylogLogLevel level =
         graylog_level_for_lumberjack_flag(logMessage->_flag);
 
-    NSDictionary* dataDictionary = nil;
+    NSString* msg = nil;
+    if (self->_logFormatter)
+        msg = [self->_logFormatter formatLogMessage:logMessage];
+    else
+        msg = logMessage->_message;
+
+    NSNumber* const stamp = @((time_t)logMessage->_timestamp.timeIntervalSince1970);
+
+    NSDictionary* dict = nil;
     if ([logMessage->_tag isKindOfClass:dictClass]) {
-        dataDictionary = logMessage->_tag;
+        dict = logMessage->_tag;
     }
     else if (logMessage->_tag) {
-        dataDictionary = @{ @"tag": logMessage->_tag };
+        dict = @{ @"_tag": logMessage->_tag };
     }
 
-    _graylog_log(level, self->facility, logMsg, dataDictionary);
+    _graylog_log(level, self->facility, msg, stamp, dict);
 }
 
 @end

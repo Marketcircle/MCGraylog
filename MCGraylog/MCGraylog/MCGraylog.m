@@ -209,6 +209,7 @@ NSData*
 format_message(const GraylogLogLevel lvl,
                __unsafe_unretained NSString* const facility,
                __unsafe_unretained NSString* const message,
+               __unsafe_unretained NSNumber* const timestamp,
                __unsafe_unretained NSDictionary* const xtra_data)
 {
     NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithCapacity:16];
@@ -216,7 +217,7 @@ format_message(const GraylogLogLevel lvl,
     dict[@"version"]       = @"1.1";
     dict[@"host"]          = hostname;
     dict[@"short_message"] = message;
-    dict[@"timestamp"]     = @(time(NULL));
+    dict[@"timestamp"]     = timestamp;
     dict[@"level"]         = @(lvl);
     dict[@"_facility"]     = facility;
 
@@ -398,11 +399,13 @@ void
 _graylog_log(const GraylogLogLevel level,
              __unsafe_unretained NSString* const facility,
              __unsafe_unretained NSString* const message,
+             __unsafe_unretained NSNumber* const timestamp,
              __unsafe_unretained NSDictionary* const data)
 {
     NSData* const formatted_message = format_message(level,
                                                      facility,
                                                      message,
+                                                     timestamp,
                                                      data);
     if (!formatted_message) return;
 
@@ -438,7 +441,11 @@ graylog_log(const GraylogLogLevel level,
         return;
     }
 
+    // this needs to be done before going async, we don't know when
+    // the log block will actually execute
+    NSNumber* const stamp = @(time(NULL));
+
     dispatch_async(_graylog_queue, ^{ @autoreleasepool {
-        _graylog_log(level, facility, message, data);
+        _graylog_log(level, facility, message, stamp, data);
     } });
 }
