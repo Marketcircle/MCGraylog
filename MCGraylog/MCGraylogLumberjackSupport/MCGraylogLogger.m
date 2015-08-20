@@ -13,9 +13,6 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdirect-ivar-access"
 
-GraylogLogLevel graylog_level_for_javin_level(const DDLogLevel level);
-
-static NSString* const JNGraylogLoggerFacility = @"Javin";
 static Class dictClass = nil;
 
 @implementation MCGraylogLogger {
@@ -26,10 +23,6 @@ static Class dictClass = nil;
 
 + (void)initialize {
     dictClass = [NSDictionary class];
-}
-
-- (instancetype)initWithServer:(NSURL *)graylogServer graylogLevel:(GraylogLogLevel)level {
-    return [self initWithServer:graylogServer graylogLevel:level facility:JNGraylogLoggerFacility];
 }
 
 - (instancetype)initWithServer:(NSURL*)graylogServer

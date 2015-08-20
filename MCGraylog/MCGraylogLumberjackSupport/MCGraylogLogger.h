@@ -12,9 +12,6 @@
 @interface MCGraylogLogger : DDAbstractLogger
 
 - (instancetype)initWithServer:(NSURL*)graylogServer
-                  graylogLevel:(GraylogLogLevel)level;
-
-- (instancetype)initWithServer:(NSURL*)graylogServer
                   graylogLevel:(GraylogLogLevel)level
                       facility:(NSString*)facility
 NS_DESIGNATED_INITIALIZER;
