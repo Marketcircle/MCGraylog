@@ -160,23 +160,22 @@ graylog_init(NSURL* const graylog_url, const GraylogLogLevel init_level)
     return 0;
 }
 
-static void empty_func(__unused void* const ctx) {}
 
 void
 graylog_deinit()
 {
-    if (_graylog_queue) {
-        dispatch_barrier_sync_f(_graylog_queue, NULL, empty_func);
-        _graylog_queue = NULL;
-    }
-    
+    graylog_flush();
+    _graylog_queue = NULL;
+
     if (graylog_socket != -1) {
         if (close(graylog_socket) == -1)
             NSLog(@"Graylog: failed to close socket: %@",
                   [NSError errorWithDomain:NSPOSIXErrorDomain code:errno userInfo:nil]);
         graylog_socket = -1;
     }
-    
+
+    // anything sent to Graylog after deinit will get logged
+    // and in graylog_log it should end up going to NSLog
     max_log_level = GraylogLogLevelDebug;
 }
 
@@ -435,7 +434,7 @@ graylog_log(const GraylogLogLevel level,
     if (level > max_log_level) return;
     
     if (_graylog_queue == NULL) {
-        NSLog(@"Graylog: %@: %@\nuserInfo=%@", facility, message, data);
+        NSLog(@"Graylog[%@] %@\nuserInfo=%@", facility, message, data);
         return;
     }
 
@@ -446,4 +445,13 @@ graylog_log(const GraylogLogLevel level,
     dispatch_async(_graylog_queue, ^{ @autoreleasepool {
         _graylog_log(level, facility, message, stamp, data);
     } });
+}
+
+static void empty_func(__unused void* const ctx) {}
+
+void
+graylog_flush()
+{
+    if (_graylog_queue == NULL) return;
+    dispatch_barrier_sync_f(_graylog_queue, NULL, empty_func);
 }

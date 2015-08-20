@@ -80,6 +80,11 @@ void graylog_log(const GraylogLogLevel level,
                  NSString* __nonnull const message,
                  NSDictionary* __nullable const userInfo);
 
+/**
+ * Block until all queued log messages have been sent.
+ */
+void graylog_flush();
+
 
 #define GRAYLOG_LOG(level, facility, format, ...) {                         \
     NSString* message = [NSString stringWithFormat:format, ##__VA_ARGS__];  \
