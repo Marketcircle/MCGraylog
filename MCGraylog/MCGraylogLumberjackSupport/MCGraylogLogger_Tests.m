@@ -17,20 +17,20 @@ extern GraylogLogLevel graylog_level_for_lumberjack_flag(const DDLogFlag level);
 @implementation JNGraylogLogger_Tests
 
 - (void)testLogLevelConversions {
-    XCTAssertEqual(graylog_level_for_lumberjack_level(DDLogFlagVerbose), GraylogLogLevelDebug,
+    XCTAssertEqual(graylog_level_for_lumberjack_flag(DDLogFlagVerbose), GraylogLogLevelDebug,
                    @"Failed to convert FATAL");
-    XCTAssertEqual(graylog_level_for_lumberjack_level(DDLogFlagError), GraylogLogLevelError,
+    XCTAssertEqual(graylog_level_for_lumberjack_flag(DDLogFlagError), GraylogLogLevelError,
                    @"Failed to convert ALERT");
-    XCTAssertEqual(graylog_level_for_lumberjack_level(DDLogFlagWarning), GraylogLogLevelWarn,
+    XCTAssertEqual(graylog_level_for_lumberjack_flag(DDLogFlagWarning), GraylogLogLevelWarn,
                    @"Failed to convert WARN");
-    XCTAssertEqual(graylog_level_for_lumberjack_level(DDLogFlagInfo), GraylogLogLevelInfo,
+    XCTAssertEqual(graylog_level_for_lumberjack_flag(DDLogFlagInfo), GraylogLogLevelInfo,
                    @"Failed to convert INFO");
-    XCTAssertEqual(graylog_level_for_lumberjack_level(DDLogFlagDebug), GraylogLogLevelDebug,
+    XCTAssertEqual(graylog_level_for_lumberjack_flag(DDLogFlagDebug), GraylogLogLevelDebug,
                    @"Failed to convert DEBUG");
 } /* - testLogLevelConversions */
 
 - (void)testInvalidLogLevelFallsBackToHighestLogLevel {
-    XCTAssertEqual(graylog_level_for_lumberjack_level(900000), GraylogLogLevelFatal,
+    XCTAssertEqual(graylog_level_for_lumberjack_flag(900000), GraylogLogLevelFatal,
                    @"Fallback level was not the highest!");
 } /* - testLogLevelConversions */
 
