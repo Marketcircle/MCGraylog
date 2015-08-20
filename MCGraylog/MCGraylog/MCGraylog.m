@@ -432,10 +432,6 @@ graylog_log(const GraylogLogLevel level,
     // ignore messages that are not important enough to log
     if (level > max_log_level) return;
     
-    if (!(facility && message))
-        [NSException raise:NSInvalidArgumentException
-                    format:@"Facility: %@; Message: %@", facility, message];
-
     if (_graylog_queue == NULL) {
         NSLog(@"Graylog: %@: %@\nuserInfo=%@", facility, message, data);
         return;
