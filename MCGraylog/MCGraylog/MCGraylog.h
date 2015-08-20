@@ -80,6 +80,12 @@ void graylog_log(const GraylogLogLevel level,
                  NSString* __nonnull const message,
                  NSDictionary* __nullable const userInfo);
 
+void graylog_log2(const GraylogLogLevel level,
+                  NSString* __nonnull const facility,
+                  NSString* __nonnull const short_message,
+                  NSString* __nonnull const full_message,
+                  NSDictionary* __nullable const userInfo);
+
 /**
  * Block until all queued log messages have been sent.
  */

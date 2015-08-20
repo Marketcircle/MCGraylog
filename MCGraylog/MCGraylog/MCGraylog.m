@@ -447,6 +447,23 @@ graylog_log(const GraylogLogLevel level,
     } });
 }
 
+void
+graylog_log2(const GraylogLogLevel level,
+             NSString* const facility,
+             NSString* const short_message,
+             NSString* const full_message,
+             NSDictionary* const data)
+{
+    if (data) {
+        NSMutableDictionary* const info = data.mutableCopy;
+        info[@"full_message"] = full_message;
+        graylog_log(level, facility, short_message, info);
+    }
+    else {
+        graylog_log(level, facility, short_message, @{ @"full_message": full_message });
+    }
+}
+
 static void empty_func(__unused void* const ctx) {}
 
 void
