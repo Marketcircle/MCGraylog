@@ -171,7 +171,9 @@ graylog_deinit()
     }
     
     if (graylog_socket != -1) {
-        close(graylog_socket);
+        if (close(graylog_socket) == -1)
+            NSLog(@"Graylog: failed to close socket: %@",
+                  [NSError errorWithDomain:NSPOSIXErrorDomain code:errno userInfo:nil]);
         graylog_socket = -1;
     }
     
