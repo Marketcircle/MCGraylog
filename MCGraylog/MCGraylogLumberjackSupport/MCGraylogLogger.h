@@ -18,11 +18,11 @@
 
 @interface MCGraylogLogger : DDAbstractLogger
 
-- (instancetype)initWithServer:(NSURL*)graylogServer
-                  graylogLevel:(GraylogLogLevel)level
-                      facility:(NSString*)facility
-NS_DESIGNATED_INITIALIZER;
+- (nullable instancetype)initWithServer:(nonnull NSURL*)graylogServer
+                           graylogLevel:(GraylogLogLevel)level
+                               facility:(nonnull NSString*)facility
+    NS_DESIGNATED_INITIALIZER;
 
-@property (nonatomic,retain) NSString* loggerFacility;
+@property (nonatomic,retain,nonnull) NSString* loggerFacility;
 
 @end
