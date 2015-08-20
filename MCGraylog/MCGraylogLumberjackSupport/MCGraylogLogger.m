@@ -6,12 +6,8 @@
 //  Copyright (c) 2013 Marketcircle. All rights reserved.
 //
 
-#import <MCGraylog/MCGraylog.h>
-#import <MCGraylog/Internals.h>
 #import "MCGraylogLogger.h"
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdirect-ivar-access"
+#import <MCGraylog/Internals.h>
 
 static Class dictClass = nil;
 
@@ -83,5 +79,3 @@ graylog_level_for_lumberjack_flag(const DDLogFlag level)
 }
 
 @end
-
-#pragma clang diagnostic pop
