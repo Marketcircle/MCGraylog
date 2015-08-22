@@ -18,6 +18,12 @@
 
 #import <zlib.h>
 
+void graylog_deinit(void);
+GraylogLogLevel graylog_log_level(void);
+dispatch_queue_t graylog_queue(void);
+void graylog_flush(void);
+
+
 static GraylogLogLevel max_log_level       = GraylogLogLevelDebug;
 static dispatch_queue_t _graylog_queue     = NULL;
 static int   graylog_socket                = -1;
@@ -64,10 +70,10 @@ graylog_init_socket(NSURL* const graylog_url)
         port = graylog_default_port;
     
     // need to cast the host to a CFStringRef for the next part
-    CFStringRef const hostname = (__bridge CFStringRef)(graylog_url.host);
+    CFStringRef const host_string = (__bridge CFStringRef)(graylog_url.host);
     
     // try to resolve the hostname
-    CFHostRef const host = CFHostCreateWithName(kCFAllocatorDefault, hostname);
+    CFHostRef const host = CFHostCreateWithName(kCFAllocatorDefault, host_string);
     
     if (!host) {
         NSLog(@"Could not allocate CFHost to lookup IP address of graylog");
@@ -91,9 +97,9 @@ graylog_init_socket(NSURL* const graylog_url)
     }
     
 
-    const size_t addresses_count = CFArrayGetCount(addresses);
+    const CFIndex addresses_count = CFArrayGetCount(addresses);
     
-    for (size_t i = 0; i < addresses_count; i++) {
+    for (CFIndex i = 0; i < addresses_count; i++) {
         
         CFDataRef const address =
             (CFDataRef)CFArrayGetValueAtIndex(addresses, i);
@@ -305,7 +311,7 @@ graylog_hash()
 
     // calculate hash
     for (const char* p = utf8_name; *p; ++p)
-        hash = hash * P2 + *p;
+        hash = hash * P2 + (uint64_t)*p;
 
     size_t current_time = mach_absolute_time();
     do {
@@ -464,7 +470,9 @@ graylog_log2(const GraylogLogLevel level,
     }
 }
 
+
 static void empty_func(__unused void* const ctx) {}
+
 
 void
 graylog_flush()

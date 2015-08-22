@@ -92,9 +92,9 @@ void graylog_log2(const GraylogLogLevel level,
 void graylog_flush();
 
 
-#define GRAYLOG_LOG(level, facility, format, ...) {                         \
-    NSString* message = [NSString stringWithFormat:format, ##__VA_ARGS__];  \
-    graylog_log(level, facility, message, nil);                             \
+#define GRAYLOG_LOG(level, facility, format, ...) {                           \
+    NSString* __message = [NSString stringWithFormat:format, ##__VA_ARGS__];  \
+    graylog_log(level, facility, __message, nil);                             \
 }
 
 #define GRAYLOG_EMERGENCY(facility, format, ...) \
