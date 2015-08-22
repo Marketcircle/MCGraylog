@@ -16,6 +16,9 @@
 		2ED8BABC17551CFA00F6F3D6 /* MCGraylog.h in Headers */ = {isa = PBXBuildFile; fileRef = B85586AB1737FDA400945AF3 /* MCGraylog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2EFC142D1ADBF99A00CB6A43 /* MCGraylogLogger_Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2E113C281ADBEC3D00CB6A43 /* MCGraylogLogger_Tests.m */; };
 		92711D0F17B2A71E004BAE9C /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92711D0E17B2A71E004BAE9C /* CFNetwork.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		AF482B901B88563D00B277ED /* GraylogCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = AF482B8F1B88563D00B277ED /* GraylogCrashReporter.m */; };
+		AF482B961B8857A500B277ED /* MCGraylog.m in Sources */ = {isa = PBXBuildFile; fileRef = B85586AC1737FDA400945AF3 /* MCGraylog.m */; };
+		AF482B981B88588B00B277ED /* libz.1.2.5.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AF482B971B88588B00B277ED /* libz.1.2.5.dylib */; };
 		AF8F753217A1815800E72561 /* Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = AFC59FD6179D7FC800816DA2 /* Internals.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		AFE428BB1A71E3140016818E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B85586A31737FDA400945AF3 /* Foundation.framework */; };
 		AFE428C71A71E34A0016818E /* MCGraylog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B855869B1737FDA400945AF3 /* MCGraylog.framework */; };
@@ -44,6 +47,18 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		AF482B8B1B88563D00B277ED /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		2E113C091ADBEBDF00CB6A43 /* MCGraylogLumberjackSupport.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MCGraylogLumberjackSupport.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E113C0C1ADBEBDF00CB6A43 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -56,6 +71,9 @@
 		2E638C2E1753E78C009E98BD /* MCGraylogIntegrationTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MCGraylogIntegrationTests.m; path = ../MCGraylogTests/MCGraylogIntegrationTests.m; sourceTree = "<group>"; };
 		2EA2704D1B6A6A8100AFA2FE /* CocoaLumberjack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaLumberjack.framework; path = "../../../../../Library/Developer/Xcode/DerivedData/Javin-gzfhfsalzfetrtaoaxyyhfwsbwgm/Build/Products/Debug/CocoaLumberjack.framework"; sourceTree = "<group>"; };
 		92711D0E17B2A71E004BAE9C /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
+		AF482B8D1B88563D00B277ED /* GraylogCrashReporter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = GraylogCrashReporter; sourceTree = BUILT_PRODUCTS_DIR; };
+		AF482B8F1B88563D00B277ED /* GraylogCrashReporter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GraylogCrashReporter.m; sourceTree = "<group>"; };
+		AF482B971B88588B00B277ED /* libz.1.2.5.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.2.5.dylib; path = usr/lib/libz.1.2.5.dylib; sourceTree = SDKROOT; };
 		AF5B0A70179C8B7A0056C6E8 /* MCGraylogTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MCGraylogTests.m; path = ../MCGraylogTests/MCGraylogTests.m; sourceTree = "<group>"; };
 		AFC59FD6179D7FC800816DA2 /* Internals.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Internals.h; path = "MCGraylog/Private Headers/Internals.h"; sourceTree = "<group>"; };
 		AFE428C11A71E34A0016818E /* MCGraylog Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "MCGraylog Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -86,6 +104,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				2E113C3B1ADBEE0000CB6A43 /* MCGraylogLumberjackSupport.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AF482B8A1B88563D00B277ED /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AF482B981B88588B00B277ED /* libz.1.2.5.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -146,6 +172,14 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		AF482B8E1B88563D00B277ED /* GraylogCrashReporter */ = {
+			isa = PBXGroup;
+			children = (
+				AF482B8F1B88563D00B277ED /* GraylogCrashReporter.m */,
+			);
+			path = GraylogCrashReporter;
+			sourceTree = "<group>";
+		};
 		AFC59FD7179D7FF400816DA2 /* Private Headers */ = {
 			isa = PBXGroup;
 			children = (
@@ -181,6 +215,7 @@
 				AFE428C21A71E34A0016818E /* MCGraylog Tests */,
 				2E113C0A1ADBEBDF00CB6A43 /* MCGraylogLumberjackSupport */,
 				2E113C361ADBEE0000CB6A43 /* MCGraylogLumberjackSupport Tests */,
+				AF482B8E1B88563D00B277ED /* GraylogCrashReporter */,
 				B855869D1737FDA400945AF3 /* Frameworks */,
 				B855869C1737FDA400945AF3 /* Products */,
 			);
@@ -193,6 +228,7 @@
 				AFE428C11A71E34A0016818E /* MCGraylog Tests.xctest */,
 				2E113C091ADBEBDF00CB6A43 /* MCGraylogLumberjackSupport.framework */,
 				2E113C351ADBEE0000CB6A43 /* MCGraylogLumberjackSupport Tests.xctest */,
+				AF482B8D1B88563D00B277ED /* GraylogCrashReporter */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -200,6 +236,7 @@
 		B855869D1737FDA400945AF3 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				AF482B971B88588B00B277ED /* libz.1.2.5.dylib */,
 				2EA2704D1B6A6A8100AFA2FE /* CocoaLumberjack.framework */,
 				92711D0E17B2A71E004BAE9C /* CFNetwork.framework */,
 				B85586CD1737FE4200945AF3 /* libz.dylib */,
@@ -289,6 +326,23 @@
 			productReference = 2E113C351ADBEE0000CB6A43 /* MCGraylogLumberjackSupport Tests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		AF482B8C1B88563D00B277ED /* GraylogCrashReporter */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AF482B931B88563D00B277ED /* Build configuration list for PBXNativeTarget "GraylogCrashReporter" */;
+			buildPhases = (
+				AF482B891B88563D00B277ED /* Sources */,
+				AF482B8A1B88563D00B277ED /* Frameworks */,
+				AF482B8B1B88563D00B277ED /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GraylogCrashReporter;
+			productName = GraylogCrashReporter;
+			productReference = AF482B8D1B88563D00B277ED /* GraylogCrashReporter */;
+			productType = "com.apple.product-type.tool";
+		};
 		AFE428C01A71E34A0016818E /* MCGraylog Tests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = AFE428CA1A71E34A0016818E /* Build configuration list for PBXNativeTarget "MCGraylog Tests" */;
@@ -341,6 +395,9 @@
 					2E113C341ADBEE0000CB6A43 = {
 						CreatedOnToolsVersion = 6.2;
 					};
+					AF482B8C1B88563D00B277ED = {
+						CreatedOnToolsVersion = 6.4;
+					};
 					AFE428C01A71E34A0016818E = {
 						CreatedOnToolsVersion = 6.2;
 					};
@@ -362,6 +419,7 @@
 				AFE428C01A71E34A0016818E /* MCGraylog Tests */,
 				2E113C081ADBEBDF00CB6A43 /* MCGraylogLumberjackSupport */,
 				2E113C341ADBEE0000CB6A43 /* MCGraylogLumberjackSupport Tests */,
+				AF482B8C1B88563D00B277ED /* GraylogCrashReporter */,
 			);
 		};
 /* End PBXProject section */
@@ -413,6 +471,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				2EFC142D1ADBF99A00CB6A43 /* MCGraylogLogger_Tests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AF482B891B88563D00B277ED /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AF482B901B88563D00B277ED /* GraylogCrashReporter.m in Sources */,
+				AF482B961B8857A500B277ED /* MCGraylog.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -596,6 +663,112 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		AF482B911B88563D00B277ED /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_ASSIGN_ENUM = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_IMPLICIT_SIGN_CONVERSION = YES;
+				CLANG_WARN_OBJC_EXPLICIT_OWNERSHIP_TYPE = YES;
+				CLANG_WARN_OBJC_IMPLICIT_ATOMIC_PROPERTIES = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS = YES;
+				CLANG_WARN_OBJC_RECEIVER_WEAK = YES;
+				CLANG_WARN_OBJC_REPEATED_USE_OF_WEAK = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_TREAT_IMPLICIT_FUNCTION_DECLARATIONS_AS_ERRORS = YES;
+				GCC_TREAT_INCOMPATIBLE_POINTER_TYPE_WARNINGS_AS_ERRORS = YES;
+				GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS = YES;
+				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = YES;
+				GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = YES;
+				GCC_WARN_MULTIPLE_DEFINITION_TYPES_FOR_SELECTOR = YES;
+				GCC_WARN_SHADOW = YES;
+				GCC_WARN_SIGN_COMPARE = YES;
+				GCC_WARN_STRICT_SELECTOR_MATCH = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNKNOWN_PRAGMAS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_LABEL = YES;
+				GCC_WARN_UNUSED_PARAMETER = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = (
+					"-Weverything",
+					"-Wno-gnu",
+				);
+			};
+			name = Debug;
+		};
+		AF482B921B88563D00B277ED /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_ASSIGN_ENUM = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_IMPLICIT_SIGN_CONVERSION = YES;
+				CLANG_WARN_OBJC_EXPLICIT_OWNERSHIP_TYPE = YES;
+				CLANG_WARN_OBJC_IMPLICIT_ATOMIC_PROPERTIES = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS = YES;
+				CLANG_WARN_OBJC_RECEIVER_WEAK = YES;
+				CLANG_WARN_OBJC_REPEATED_USE_OF_WEAK = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_TREAT_IMPLICIT_FUNCTION_DECLARATIONS_AS_ERRORS = YES;
+				GCC_TREAT_INCOMPATIBLE_POINTER_TYPE_WARNINGS_AS_ERRORS = YES;
+				GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS = YES;
+				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = YES;
+				GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = YES;
+				GCC_WARN_MULTIPLE_DEFINITION_TYPES_FOR_SELECTOR = YES;
+				GCC_WARN_SHADOW = YES;
+				GCC_WARN_SIGN_COMPARE = YES;
+				GCC_WARN_STRICT_SELECTOR_MATCH = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNKNOWN_PRAGMAS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_LABEL = YES;
+				GCC_WARN_UNUSED_PARAMETER = YES;
+				LLVM_LTO = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = (
+					"-Weverything",
+					"-Wno-gnu",
+				);
 			};
 			name = Release;
 		};
@@ -784,6 +957,14 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
+		};
+		AF482B931B88563D00B277ED /* Build configuration list for PBXNativeTarget "GraylogCrashReporter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AF482B911B88563D00B277ED /* Debug */,
+				AF482B921B88563D00B277ED /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
 		};
 		AFE428CA1A71E34A0016818E /* Build configuration list for PBXNativeTarget "MCGraylog Tests" */ = {
 			isa = XCConfigurationList;
