@@ -12,8 +12,6 @@
 static NSString* const facility = @"Crash Reporter";
 static NSDate* previous_iteration_newest_create_date = nil;
 
-static const NSDirectoryEnumerationOptions enum_options = NSDirectoryEnumerationSkipsHiddenFiles;
-
 static void forward_crash_reports(__unused void* ctx) {
 @autoreleasepool {
 
@@ -26,7 +24,7 @@ static void forward_crash_reports(__unused void* ctx) {
 
     NSArray* const reports = [m contentsOfDirectoryAtURL:log_dir
                               includingPropertiesForKeys:@[NSURLCreationDateKey]
-                                                 options:enum_options
+                                                 options:NSDirectoryEnumerationSkipsHiddenFiles
                                                    error:&error];
 
     if (reports == nil) {
