@@ -46,6 +46,7 @@ GraylogLogLevel
 graylog_level_for_lumberjack_flag(const DDLogFlag level)
 {
     switch (level) {
+        case DDLogFlagCritical:         return GraylogLogLevelCritical;
         case DDLogFlagError:            return GraylogLogLevelError;
         case DDLogFlagWarning:          return GraylogLogLevelWarning;
         case DDLogFlagInfo:             return GraylogLogLevelInformational;
