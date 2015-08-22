@@ -50,7 +50,7 @@ static
 int
 graylog_init_socket(NSURL* const graylog_url)
 {
-    hostname = NSHost.currentHost.localizedName;
+    hostname = NSProcessInfo.processInfo.hostName;
 
     // get the host name string
     if (!graylog_url.host) {
