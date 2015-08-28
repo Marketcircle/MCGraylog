@@ -58,8 +58,8 @@ graylog_init_socket(NSURL* const graylog_url)
 {
     char name[255];
     if (gethostname(name, sizeof(name)) == -1) {
-        NSLog(@"gethostname wants to return a hostname that is way too long (%d): %s",
-              errno, strerror(errno));
+        NSLog(@"gethostname wants to return a hostname that is way too long (%d): %@",
+              errno, @(strerror(errno)));
         return -1;
     }
 
