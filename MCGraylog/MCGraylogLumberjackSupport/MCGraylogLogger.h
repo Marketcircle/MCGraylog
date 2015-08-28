@@ -18,11 +18,19 @@
 
 @interface MCGraylogLogger : DDAbstractLogger
 
+/**
+ * @return nil if graylog_init fails, otherwise returns instancetype
+ */
 - (nullable instancetype)initWithServer:(nonnull NSURL*)graylogServer
                            graylogLevel:(GraylogLogLevel)level
                                facility:(nonnull NSString*)facility
     NS_DESIGNATED_INITIALIZER;
 
 @property (nonatomic,retain,nonnull) NSString* loggerFacility;
+
+/**
+ * Additional fields/values which should be included in each log message.
+ */
+@property (nonatomic,readonly,nonnull) NSMutableDictionary* tagData;
 
 @end

@@ -13,9 +13,11 @@ static Class dictClass = nil;
 
 @implementation MCGraylogLogger {
     NSString* facility;
+    NSMutableDictionary* tag_data;
 }
 
 @synthesize loggerFacility = facility;
+@synthesize tagData = tag_data;
 
 + (void)initialize {
     dictClass = [NSDictionary class];
@@ -27,8 +29,11 @@ static Class dictClass = nil;
 {
     if (!(self = [super init])) return nil;
 
-    graylog_init(graylogServer, level);
+    if (graylog_init(graylogServer, level) == -1)
+        return nil;
+
     self->facility = init_facility;
+    self->tag_data = [[NSMutableDictionary alloc] initWithCapacity:2];
 
     return init_facility ? self : nil;
 }
@@ -67,12 +72,12 @@ graylog_level_for_lumberjack_flag(const DDLogFlag level)
 
     NSNumber* const stamp = @((time_t)logMessage->_timestamp.timeIntervalSince1970);
 
-    NSDictionary* dict = nil;
+    NSMutableDictionary* dict = self->tag_data.mutableCopy;
     if ([logMessage->_tag isKindOfClass:dictClass]) {
-        dict = logMessage->_tag;
+        [dict addEntriesFromDictionary:logMessage->_tag];
     }
     else if (logMessage->_tag) {
-        dict = @{ @"_tag": logMessage->_tag };
+        dict[@"_tag"] = logMessage->_tag;
     }
 
     _graylog_log(level, self->facility, msg, stamp, dict);
