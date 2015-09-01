@@ -39,6 +39,9 @@ static NSString* const MCGraylogLogFacility = @"mcgraylog";
 #define P1 7
 #define P2 31
 
+#define likely(x) __builtin_expect(x, 1)
+#define unlikely(x) __builtin_expect(x, 0)
+
 
 typedef Byte message_id_t[8];
 
@@ -268,7 +271,7 @@ format_message(const GraylogLogLevel lvl,
         return nil;
     }
     
-    if (error) {
+    if (unlikely(error)) {
         // hopefully this doesn't fail as well...
         GRAYLOG_ERROR(MCGraylogLogFacility,
                       @"Failed to serialize message: %@", error);
@@ -285,23 +288,25 @@ compress_message(__unsafe_unretained NSData* const message,
                  uint8_t** const deflated_message,
                  size_t* const deflated_message_size)
 {
-    // predict size first, then use that value for output buffer
-    *deflated_message_size = compressBound([message length]);
-    *deflated_message      = malloc(*deflated_message_size);
+    const NSUInteger length = message.length;
+    *deflated_message_size  = compressBound(length);
+    *deflated_message       = malloc(*deflated_message_size);
 
-    const int result = compress(*deflated_message,
-                                deflated_message_size,
-                                [message bytes],
-                                [message length]);
-    
-    if (result != Z_OK) {
+    // predict size first, then use that value for output buffer
+    const int result = compress2(*deflated_message,
+                                 deflated_message_size,
+                                 message.bytes,
+                                 length,
+                                 Z_BEST_SPEED);
+
+    if (unlikely(result != Z_OK)) {
         // hopefully this doesn't fail...
         GRAYLOG_ERROR(MCGraylogLogFacility,
                       @"Failed to compress message: %d", result);
         free(*deflated_message);
         return -1;
     }
-    
+
     return 0;
 }
 
@@ -338,7 +343,7 @@ send_chunk(const uint8_t* const message, const size_t message_size)
     const ssize_t send_result =
         send(graylog_socket, message, message_size, 0);
 
-    if (send_result == (ssize_t)message_size) return;
+    if (likely(send_result == (ssize_t)message_size)) return;
 
     NSCAssert(send_result == -1,
               @"Graylog message was truncated. "
@@ -421,7 +426,7 @@ _graylog_log(const GraylogLogLevel level,
                                                      message,
                                                      timestamp,
                                                      data);
-    if (!formatted_message) return;
+    if (unlikely(!formatted_message)) return;
 
     uint8_t* compressed_message      = NULL;
     size_t   compressed_message_size = 0;
@@ -429,7 +434,7 @@ _graylog_log(const GraylogLogLevel level,
     compress_message(formatted_message,
                      &compressed_message,
                      &compressed_message_size);
-    if (compress_result) return;
+    if (unlikely(compress_result)) return;
 
     send_log(compressed_message, compressed_message_size);
 
