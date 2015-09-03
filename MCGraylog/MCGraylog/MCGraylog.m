@@ -293,11 +293,10 @@ compress_message(__unsafe_unretained NSData* const message,
     *deflated_message       = malloc(*deflated_message_size);
 
     // predict size first, then use that value for output buffer
-    const int result = compress2(*deflated_message,
-                                 deflated_message_size,
-                                 message.bytes,
-                                 length,
-                                 Z_BEST_SPEED);
+    const int result = compress(*deflated_message,
+                                deflated_message_size,
+                                message.bytes,
+                                length);
 
     if (unlikely(result != Z_OK)) {
         // hopefully this doesn't fail...
