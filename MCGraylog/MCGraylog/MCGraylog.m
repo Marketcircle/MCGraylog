@@ -271,7 +271,7 @@ format_message(const GraylogLogLevel lvl,
         return nil;
     }
     
-    if (unlikely(error)) {
+    if (unlikely(error != nil)) {
         // hopefully this doesn't fail as well...
         GRAYLOG_ERROR(MCGraylogLogFacility,
                       @"Failed to serialize message: %@", error);
