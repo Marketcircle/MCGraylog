@@ -18,7 +18,7 @@ int
 main(int argc, char** argv)
 {
   // have to initialize some state first
-  NSURL* graylog_url = [NSURL URLWithString:@"graylog://localhost/"];
+  NSURL* graylog_url = [NSURL URLWithString:@"graylog://localhost:12900/"];
   int init_error = graylog_init(graylog_url, GraylogLogLevelDebug);
   if (init_error)
     return -1;
@@ -58,7 +58,7 @@ See CONTRIBUTING.markdown
 
 ## Copyright
 
-Copyright (c) 2013, Marketcircle Inc.
+Copyright (c) 2013-2015, Marketcircle Inc.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
