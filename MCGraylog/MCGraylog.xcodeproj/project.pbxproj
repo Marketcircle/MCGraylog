@@ -563,6 +563,7 @@
 				WARNING_CFLAGS = (
 					"-Weverything",
 					"-Wno-direct-ivar-access",
+					"-Rno-module-build",
 				);
 			};
 			name = Debug;
@@ -602,6 +603,7 @@
 				WARNING_CFLAGS = (
 					"-Weverything",
 					"-Wno-direct-ivar-access",
+					"-Rno-module-build",
 				);
 			};
 			name = Release;
@@ -905,6 +907,7 @@
 				WARNING_CFLAGS = (
 					"-Weverything",
 					"-Wno-gnu",
+					"-Rno-module-build",
 				);
 				WRAPPER_EXTENSION = framework;
 			};
@@ -930,6 +933,7 @@
 				WARNING_CFLAGS = (
 					"-Weverything",
 					"-Wno-gnu",
+					"-Rno-module-build",
 				);
 				WRAPPER_EXTENSION = framework;
 			};

@@ -7,13 +7,13 @@
 //
 
 #ifdef __cplusplus
-#import <Foundation/Foundation.h>
-#import <CocoaLumberjack/CocoaLumberjack.h>
-#import <MCGraylog/MCGraylog.h>
+    #import <Foundation/Foundation.h>
+    #import <CocoaLumberjack/CocoaLumberjack.h>
+    #import <MCGraylog/MCGraylog.h>
 #else
-@import Foundation;
-@import CocoaLumberjack;
-@import MCGraylog;
+    @import Foundation;
+    @import CocoaLumberjack;
+    @import MCGraylog;
 #endif
 
 @interface MCGraylogLogger : DDAbstractLogger
