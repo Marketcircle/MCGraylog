@@ -34,7 +34,7 @@ static const int chunked_size              = 2;
 
 static NSString* hostname = nil;
 
-static NSString* const MCGraylogLogFacility = @"mcgraylog";
+static NSString* const GraylogFacilityKey = @"_facility";
 
 #define P1 7
 #define P2 31
@@ -222,21 +222,22 @@ graylog_queue()
 #pragma mark - Logging
 
 static
-NSData*
-format_message(const GraylogLogLevel lvl,
-               __unsafe_unretained NSString* const facility,
-               __unsafe_unretained NSString* const message,
-               __unsafe_unretained NSNumber* const timestamp,
-               __unsafe_unretained NSDictionary* const xtra_data)
+NSDictionary*
+message_dictionary(const GraylogLogLevel lvl,
+                   __unsafe_unretained NSString* const facility,
+                   __unsafe_unretained NSString* const message,
+                   __unsafe_unretained NSNumber* const timestamp,
+                   __unsafe_unretained NSDictionary* const xtra_data)
 {
-    NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithCapacity:16];
+    NSMutableDictionary* const dict =
+        [NSMutableDictionary dictionaryWithCapacity:(xtra_data.count + 6)];
 
-    dict[@"version"]       = @"1.1";
-    dict[@"host"]          = hostname;
-    dict[@"short_message"] = message;
-    dict[@"timestamp"]     = timestamp;
-    dict[@"level"]         = @(lvl);
-    dict[@"_facility"]     = facility;
+    dict[@"version"]         = @"1.1";
+    dict[@"host"]            = hostname;
+    dict[@"short_message"]   = message;
+    dict[@"timestamp"]       = timestamp;
+    dict[@"level"]           = @(lvl);
+    dict[GraylogFacilityKey] = facility;
 
     for (NSString* key in xtra_data) {
         NSCAssert(![key isEqualToString:@"id"],
@@ -255,52 +256,51 @@ format_message(const GraylogLogLevel lvl,
         }
     }
 
+    return dict;
+}
+
+static
+int
+compress_message(__unsafe_unretained NSDictionary* const message,
+                 uint8_t** const deflated_message,
+                 size_t* const deflated_message_size)
+{
     NSError* error = nil;
     NSData*   data = nil;
     @try {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wassign-enum"
-        data = [NSJSONSerialization dataWithJSONObject:dict
+        data = [NSJSONSerialization dataWithJSONObject:message
                                                options:0
                                                  error:&error];
 #pragma clang diagnostic pop
     }
     @catch (NSException* exception) {
-        GRAYLOG_ERROR(MCGraylogLogFacility,
+        GRAYLOG_ERROR(message[GraylogFacilityKey],
                       @"Failed to serialize message: %@", exception);
-        return nil;
+        return -3;
     }
-    
+
     if (unlikely(error != nil)) {
         // hopefully this doesn't fail as well...
-        GRAYLOG_ERROR(MCGraylogLogFacility,
+        GRAYLOG_ERROR(message[GraylogFacilityKey],
                       @"Failed to serialize message: %@", error);
-        return nil;
+        return -2;
     }
 
-    return data;
-}
-
-
-static
-int
-compress_message(__unsafe_unretained NSData* const message,
-                 uint8_t** const deflated_message,
-                 size_t* const deflated_message_size)
-{
-    const NSUInteger length = message.length;
+    const NSUInteger length = data.length;
     *deflated_message_size  = compressBound(length);
     *deflated_message       = malloc(*deflated_message_size);
 
     // predict size first, then use that value for output buffer
     const int result = compress(*deflated_message,
                                 deflated_message_size,
-                                message.bytes,
+                                data.bytes,
                                 length);
 
     if (unlikely(result != Z_OK)) {
         // hopefully this doesn't fail...
-        GRAYLOG_ERROR(MCGraylogLogFacility,
+        GRAYLOG_ERROR(message[GraylogFacilityKey],
                       @"Failed to compress message: %d", result);
         free(*deflated_message);
         return -1;
@@ -336,13 +336,14 @@ graylog_hash()
 
 
 static
-void
+int
 send_chunk(const uint8_t* const message, const size_t message_size)
 {
     const ssize_t send_result =
         send(graylog_socket, message, message_size, 0);
 
-    if (likely(send_result == (ssize_t)message_size)) return;
+    if (likely(send_result == (ssize_t)message_size))
+        return 0;
 
     NSCAssert(send_result == -1,
               @"Graylog message was truncated. "
@@ -354,15 +355,15 @@ send_chunk(const uint8_t* const message, const size_t message_size)
         NSLog(@"Failed to send(2) to Graylog due to transient issue, "
                "trying again in 2 seconds");
         sleep(2);
-        send_chunk(message, message_size);
-        return;
+        return send_chunk(message, message_size);
     }
 
     NSLog(@"Failed to send(2) to Graylog (%d): %@", errno, @(strerror(errno)));
+    return errno;
 }
 
 static
-void
+int
 send_log(uint8_t* const message, const size_t message_size)
 {
     // calculate the number of chunks that we will need to make
@@ -372,14 +373,12 @@ send_log(uint8_t* const message, const size_t message_size)
 
     // in the most likely case, we only need one message chunk,
     // so we have a fast path for that case
-    if (chunk_count == 1) {
-        send_chunk(message, message_size);
-        return;
-    }
+    if (chunk_count == 1)
+        return send_chunk(message, message_size);
 
     if (chunk_count > 128) {
         NSLog(@"Failed to send to Graylog: too many chunks (max 128, got %lu)", chunk_count);
-        return;
+        return EMSGSIZE;
     }
 
     // in the less likely case, we need to break the message up
@@ -408,10 +407,13 @@ send_log(uint8_t* const message, const size_t message_size)
         [chunk appendBytes:(message + (i*max_chunk_size))
                     length:bytes_to_copy];
 
-        send_chunk((const uint8_t*)header, chunk_length);
+        const int result = send_chunk((const uint8_t*)header, chunk_length);
+        if (result != 0)
+            return result;
     }
-}
 
+    return 0;
+}
 
 void
 _graylog_log(const GraylogLogLevel level,
@@ -420,24 +422,47 @@ _graylog_log(const GraylogLogLevel level,
              __unsafe_unretained NSNumber* const timestamp,
              __unsafe_unretained NSDictionary* const data)
 {
-    NSData* const formatted_message = format_message(level,
-                                                     facility,
-                                                     message,
-                                                     timestamp,
-                                                     data);
-    if (unlikely(!formatted_message)) return;
+    NSDictionary* const formatted_message = message_dictionary(level,
+                                                               facility,
+                                                               message,
+                                                               timestamp,
+                                                               data);
 
     uint8_t* compressed_message      = NULL;
     size_t   compressed_message_size = 0;
-    const int compress_result =
-    compress_message(formatted_message,
-                     &compressed_message,
-                     &compressed_message_size);
-    if (unlikely(compress_result)) return;
+    const int compress_result = compress_message(formatted_message,
+                                                 &compressed_message,
+                                                 &compressed_message_size);
+    if (unlikely(compress_result != 0)) {
+        NSString* const uuid = NSUUID.UUID.UUIDString;
+        GRAYLOG_ALERT(facility,
+                      @"Failed to compress message for Graylog. "
+                      @"Logged to asl instead, look for %@",
+                      uuid);
+        NSLog(@"MCGraylog [%@]: %@", uuid, message);
+        return;
+    }
 
-    send_log(compressed_message, compressed_message_size);
+    if (compressed_message_size > (1 * 1024 * 1024)) {
+        free(compressed_message); // don't forget!
 
+        NSString* const uuid = NSUUID.UUID.UUIDString;
+        GRAYLOG_ALERT(facility,
+                      @"Aborted sending message that was too long (%zd). "
+                      @"Logged to ASL instead, look for %@",
+                      compressed_message_size,
+                      uuid);
+        NSLog(@"MCGraylog [%@]: %@", uuid, message);
+        return;
+    }
+
+    const int result = send_log(compressed_message, compressed_message_size);
     free(compressed_message); // don't forget!
+
+    if (result != 0) {
+        // do not try to alert graylog, as that might lead to an infinite loop
+        NSLog(@"MCGraylog (%@): %@", @(strerror(result)), message);
+    }
 }
 
 
