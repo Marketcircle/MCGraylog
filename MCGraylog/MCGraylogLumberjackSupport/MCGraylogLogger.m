@@ -23,6 +23,13 @@ static Class dictClass = nil;
     dictClass = [NSDictionary class];
 }
 
+- (instancetype)init {
+    NSURL* const url = [NSURL URLWithString:@"graylog://localhost:12201"];
+    return [self initWithServer:url
+                   graylogLevel:GraylogLogLevelDebug
+                       facility:[NSProcessInfo.processInfo processName]];
+}
+
 - (instancetype)initWithServer:(NSURL*)graylogServer
                   graylogLevel:(GraylogLogLevel)level
                       facility:(NSString*)init_facility

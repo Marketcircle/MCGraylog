@@ -385,6 +385,7 @@
 		B85586921737FDA300945AF3 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftMigration = 0720;
 				LastTestingUpgradeCheck = 0620;
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = Marketcircle;
