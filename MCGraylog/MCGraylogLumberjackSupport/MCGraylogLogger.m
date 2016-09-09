@@ -80,7 +80,7 @@ graylog_level_for_lumberjack_flag(const DDLogFlag level)
 
     NSNumber* const stamp = @((time_t)logMessage->_timestamp.timeIntervalSince1970);
 
-    NSMutableDictionary* dict = self->tag_data.mutableCopy;
+    NSMutableDictionary* const dict = self->tag_data.mutableCopy;
     if ([logMessage->_tag isKindOfClass:dictClass]) {
         [dict addEntriesFromDictionary:logMessage->_tag];
     }
