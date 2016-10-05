@@ -15,6 +15,7 @@
 @import Darwin.POSIX.arpa.inet;
 @import Darwin.POSIX.netdb;
 @import Darwin.POSIX.sys.time;
+@import Darwin.Mach.mach_time;
 
 #import <zlib.h>
 
