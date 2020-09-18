@@ -80,7 +80,7 @@ graylog_init_socket(NSURL* const graylog_url)
         port = graylog_default_port;
     
     // need to cast the host to a CFStringRef for the next part
-    CFStringRef const host_string = (__bridge CFStringRef)(graylog_url.host);
+    CFStringRef const host_string = CFStringCreateWithCString(kCFAllocatorDefault, graylog_url.host.UTF8String, kCFStringEncodingUTF8);
     
     // try to resolve the hostname
     CFHostRef const host = CFHostCreateWithName(kCFAllocatorDefault, host_string);
